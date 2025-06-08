@@ -1,6 +1,7 @@
 package ReservaCruzeiros.Reserva;
 
 import ReservaCruzeiros.Criptografia.Criptografia;
+import ReservaCruzeiros.Service.ControleCabinesPromocoes;
 import ReservaCruzeiros.Service.Service;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -26,6 +27,7 @@ public class ReservaReceiver {
         receiverPagamentoAprovado();
         receiverPagamentoRecusado();
         receiverBilheteGerado();
+        receiverReservaCancelada();
     }
 
     private static void receiverPagamentoAprovado() throws Exception {
@@ -55,6 +57,14 @@ public class ReservaReceiver {
                 if (verificada) {
                     String nomeCompleto = new String(mensagemBytes, "UTF-8");
                     System.out.println("✅ Assinatura verificada. Pagamento de '" + nomeCompleto + "' foi aprovado!");
+
+                    boolean sucesso = ControleCabinesPromocoes.reservaCriada(nomeCompleto, 1);
+                    if (sucesso) {
+                        System.out.println("✅ Reserva realizada para " + nomeCompleto);
+                    } else {
+                        System.out.println("❌ Reserva falhou. Sem cabines disponíveis.");
+                    }
+
                 } else {
                     System.out.println("❌ Assinatura inválida! Pagamento possivelmente adulterado.");
                 }
@@ -66,6 +76,58 @@ public class ReservaReceiver {
                 channel.basicReject(delivery.getEnvelope().getDeliveryTag(), false);
             }
         };
+
+
+        tagPagamentoAprovado = channel.basicConsume(queueName, false, deliverCallback, consumerTag -> {});
+        canalPagamentoAprovado = channel;
+    }
+
+    private static void receiverReservaCancelada() throws Exception {
+        final String exchangeName = "cancelamento-reserva";
+        final String queueName = "cancela-reserva";
+        final String routingKey = "cancelamento";
+
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost("localhost");
+        Connection connection = factory.newConnection();
+        Channel channel = connection.createChannel();
+
+        channel.exchangeDeclare(exchangeName, "direct");
+        channel.queueDeclare(queueName, true, false, false, null);
+        channel.queueBind(queueName, exchangeName, routingKey);
+
+        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+            try {
+                String jsonStr = new String(delivery.getBody(), "UTF-8");
+                JSONObject json = new JSONObject(jsonStr);
+
+                String mensagemBase64 = json.getString("mensagem");
+                byte[] mensagemBytes = Base64.getDecoder().decode(mensagemBase64);
+
+                boolean verificada = Criptografia.verificaMensagem(json);
+
+                if (verificada) {
+                    String nomeCompleto = new String(mensagemBytes, "UTF-8");
+
+                    boolean sucesso = ControleCabinesPromocoes.reservaCancelada(nomeCompleto, 1);
+                    if (sucesso) {
+                        System.out.println("✅ Reserva cancelada para: " + nomeCompleto);
+                    } else {
+                        System.out.println("❌ Reserva falhou. Sem cabines disponíveis.");
+                    }
+
+                } else {
+                    System.out.println("❌ Assinatura inválida! Pagamento possivelmente adulterado.");
+                }
+
+                channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+            } catch (Exception e) {
+                System.err.println("Erro ao processar mensagem: " + e.getMessage());
+                e.printStackTrace();
+                channel.basicReject(delivery.getEnvelope().getDeliveryTag(), false);
+            }
+        };
+
 
         tagPagamentoAprovado = channel.basicConsume(queueName, false, deliverCallback, consumerTag -> {});
         canalPagamentoAprovado = channel;

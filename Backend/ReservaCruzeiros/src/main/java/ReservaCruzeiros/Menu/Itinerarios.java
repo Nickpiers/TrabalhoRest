@@ -1,7 +1,9 @@
 package ReservaCruzeiros.Menu;
 
+import ReservaCruzeiros.Service.CriarCruzeiro;
 import ReservaCruzeiros.Service.Service;
 
+import java.util.List;
 import java.util.Scanner;
 
 public class Itinerarios {
@@ -37,4 +39,25 @@ public class Itinerarios {
 
         return codEscolhido;
     }
+
+    public void mostrarItinerarios(String destino, String dataEmbarque, String portoEmbarque) {
+        CriarCruzeiro criador = new CriarCruzeiro();
+        List<CriarCruzeiro> cruzeiros = criador.criar();
+
+        boolean encontrou = false;
+        for (CriarCruzeiro c : cruzeiros) {
+            if ((destino == null || c.getLugaresVisitados().toLowerCase().contains(destino.toLowerCase())) &&
+                    (dataEmbarque == null || c.getDatasDisponiveis().contains(dataEmbarque)) &&
+                    (portoEmbarque == null || c.getPortoEmbarque().toLowerCase().contains(portoEmbarque.toLowerCase()))) {
+
+                System.out.println(c);
+                encontrou = true;
+            }
+        }
+
+        if (!encontrou) {
+            System.out.println("❌ Nenhum cruzeiro encontrado com os critérios informados.");
+        }
+    }
+
 }
