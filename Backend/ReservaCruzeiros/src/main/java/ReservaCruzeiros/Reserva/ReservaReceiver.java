@@ -56,14 +56,8 @@ public class ReservaReceiver {
 
                 if (verificada) {
                     String nomeCompleto = new String(mensagemBytes, "UTF-8");
+                    ControleCabinesPromocoes.confirmaReserva("caribe", nomeCompleto, 1);
                     System.out.println("✅ Assinatura verificada. Pagamento de '" + nomeCompleto + "' foi aprovado!");
-
-                    boolean sucesso = ControleCabinesPromocoes.reservaCriada(nomeCompleto, 1);
-                    if (sucesso) {
-                        System.out.println("✅ Reserva realizada para " + nomeCompleto);
-                    } else {
-                        System.out.println("❌ Reserva falhou. Sem cabines disponíveis.");
-                    }
 
                 } else {
                     System.out.println("❌ Assinatura inválida! Pagamento possivelmente adulterado.");
@@ -109,11 +103,11 @@ public class ReservaReceiver {
                 if (verificada) {
                     String nomeCompleto = new String(mensagemBytes, "UTF-8");
 
-                    boolean sucesso = ControleCabinesPromocoes.reservaCancelada(nomeCompleto, 1);
+                    boolean sucesso = ControleCabinesPromocoes.reservaCancelada(nomeCompleto, "caribe", 1);
                     if (sucesso) {
                         System.out.println("✅ Reserva cancelada para: " + nomeCompleto);
                     } else {
-                        System.out.println("❌ Reserva falhou. Sem cabines disponíveis.");
+                        System.out.println("❌ Reserva não existe");
                     }
 
                 } else {

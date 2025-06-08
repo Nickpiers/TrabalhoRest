@@ -21,7 +21,8 @@ public class ReservaController {
     }
 
     @PostMapping("/criarReserva")
-    public ResponseEntity<String> criarReserva(@RequestBody String nomeCompleto) {
+    public ResponseEntity<String> criarReserva(@RequestBody ReservaDto reserva) throws Exception {
+        ReservaPublisher.novaReserva(reserva);
         return ResponseEntity.ok("Reserva criada!");
     }
 

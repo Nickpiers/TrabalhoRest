@@ -1,13 +1,13 @@
 package ReservaCruzeiros.Reserva;
 
-import java.io.Serializable;
-
-public class ReservaDto implements Serializable {
+public class ReservaDto {
 
     String nomeCompleto;
     String dataEmbarque;
     int numeroPassageiros;
     int numeroCabines;
+
+    public ReservaDto() {}
 
     public ReservaDto( String nomeCompleto, String dataEmbarque, int numeroPassageiros, int numeroCabines) {
         this.nomeCompleto = nomeCompleto;

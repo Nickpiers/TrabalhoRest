@@ -1,5 +1,6 @@
 package ReservaCruzeiros.Pagamento;
 
+import ReservaCruzeiros.Service.ControleCabinesPromocoes;
 import ReservaCruzeiros.Service.Service;
 import com.rabbitmq.client.*;
 
@@ -26,11 +27,18 @@ public class PagamentoReceiver {
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String nomeCompleto = new String(delivery.getBody(), StandardCharsets.UTF_8);
-            try {
-                aguardaAprovacao(nomeCompleto);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+
+            boolean sucesso = ControleCabinesPromocoes.reservaCriada("caribe", nomeCompleto, 1);
+            if (sucesso) {
+                try {
+                    aguardaAprovacao(nomeCompleto);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                System.out.println("❌ Reserva falhou. Sem cabines disponíveis.");
             }
+
             channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
         };
 

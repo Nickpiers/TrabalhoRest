@@ -6,10 +6,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ControleCabinesPromocoes {
 
     private static final int QUANTIDADE_MAXIMA_CABINES = 10;
-    private static final Map<String, Integer> reservas = new ConcurrentHashMap<>();
+    private static final Map<String, Map<String, Integer>> reservasPorCruzeiro = new ConcurrentHashMap<>();
 
-    public static synchronized boolean reservaCriada(String nome, int quantidadeSolicitadaCabines) {
-        int cabinesReservadas = reservas.values().stream().mapToInt(Integer::intValue).sum();
+    public static synchronized boolean reservaCriada(String cruzeiro, String nome, int quantidadeSolicitadaCabines) {
+        reservasPorCruzeiro.putIfAbsent(cruzeiro, new ConcurrentHashMap<>());
+
+        Map<String, Integer> reservasCruzeiro = reservasPorCruzeiro.get(cruzeiro);
+
+        int cabinesReservadas = reservasCruzeiro.values().stream().mapToInt(Integer::intValue).sum();
         int disponiveis = QUANTIDADE_MAXIMA_CABINES - cabinesReservadas;
 
         if (quantidadeSolicitadaCabines <= 0) {
@@ -18,18 +22,19 @@ public class ControleCabinesPromocoes {
         }
 
         if (disponiveis >= quantidadeSolicitadaCabines) {
-            reservas.merge(nome, quantidadeSolicitadaCabines, Integer::sum);
-            System.out.println("Reserva criada para " + nome + ". Cabines restantes: " + getCabinesDisponiveis());
+            System.out.printf("Reserva é possivel");
             return true;
         } else {
-            System.out.println("Reserva falhou para " + nome + ". Cabines disponíveis: " + disponiveis);
+            System.out.printf("Reserva falhou para %s no cruzeiro %s. Cabines disponíveis: %d\n", nome, cruzeiro, disponiveis);
             return false;
         }
     }
 
-    public static synchronized boolean reservaCancelada(String nome, int quantidadeCanceladaCabines) {
-        if (!reservas.containsKey(nome)) {
-            System.out.println("Nenhuma reserva encontrada para " + nome);
+    public static synchronized boolean reservaCancelada(String cruzeiro, String nome, int quantidadeCanceladaCabines) {
+        Map<String, Integer> reservasCruzeiro = reservasPorCruzeiro.get(cruzeiro);
+
+        if (reservasCruzeiro == null || !reservasCruzeiro.containsKey(nome)) {
+            System.out.printf("Nenhuma reserva encontrada para %s no cruzeiro %s\n", nome, cruzeiro);
             return false;
         }
 
@@ -38,25 +43,37 @@ public class ControleCabinesPromocoes {
             return false;
         }
 
-        int atual = reservas.get(nome);
+        int atual = reservasCruzeiro.get(nome);
         int nova = atual - quantidadeCanceladaCabines;
 
         if (nova > 0) {
-            reservas.put(nome, nova);
+            reservasCruzeiro.put(nome, nova);
         } else {
-            reservas.remove(nome);
+            reservasCruzeiro.remove(nome);
         }
 
-        System.out.println("Reserva cancelada para " + nome + ". Cabines disponíveis: " + getCabinesDisponiveis());
+        System.out.printf("Reserva cancelada para %s no cruzeiro %s. Cabines disponíveis: %d\n", nome, cruzeiro, getCabinesDisponiveis(cruzeiro));
         return true;
     }
 
-    public static int getCabinesDisponiveis() {
-        int usadas = reservas.values().stream().mapToInt(Integer::intValue).sum();
+    public static synchronized void confirmaReserva(String cruzeiro, String nome, int quantidadeSolicitadaCabines) {
+        Map<String, Integer> reservasCruzeiro = reservasPorCruzeiro.get(cruzeiro);
+
+        reservasCruzeiro.merge(nome, quantidadeSolicitadaCabines, Integer::sum);
+        System.out.printf("Reserva criada para %s no cruzeiro %s. Cabines restantes: %d\n", nome, cruzeiro, getCabinesDisponiveis(cruzeiro));
+    }
+
+    public static int getCabinesDisponiveis(String cruzeiro) {
+        reservasPorCruzeiro.putIfAbsent(cruzeiro, new ConcurrentHashMap<>());
+        int usadas = reservasPorCruzeiro.get(cruzeiro).values().stream().mapToInt(Integer::intValue).sum();
         return QUANTIDADE_MAXIMA_CABINES - usadas;
     }
 
-    public static Map<String, Integer> getTodasReservas() {
-        return reservas;
+    public static Map<String, Integer> getReservasDoCruzeiro(String cruzeiro) {
+        return reservasPorCruzeiro.getOrDefault(cruzeiro, new ConcurrentHashMap<>());
+    }
+
+    public static Map<String, Map<String, Integer>> getTodasReservas() {
+        return reservasPorCruzeiro;
     }
 }
