@@ -81,8 +81,8 @@ public class Menu {
         int numeroCabines = scanner.nextInt();
 
         service.inicializaReceivers();
-        ReservaDto reserva = new ReservaDto(nomeCompleto, dataEmbarque, numeroPassageiros, numeroCabines);
-        ReservaPublisher.novaReserva(reserva);
+//        ReservaDto reserva = new ReservaDto(nomeCompleto, dataEmbarque, numeroPassageiros, numeroCabines);
+//        ReservaPublisher.novaReserva(reserva);
         Thread.sleep(5000);
         service.paraTodosReceivers();
     }

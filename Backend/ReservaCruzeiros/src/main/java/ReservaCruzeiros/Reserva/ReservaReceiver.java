@@ -56,7 +56,7 @@ public class ReservaReceiver {
 
                 if (verificada) {
                     String nomeCompleto = new String(mensagemBytes, "UTF-8");
-                    ControleCabinesPromocoes.confirmaReserva("caribe", nomeCompleto, 1);
+                    ControleCabinesPromocoes.confirmaReserva(1, nomeCompleto, 1);
                     System.out.println("✅ Assinatura verificada. Pagamento de '" + nomeCompleto + "' foi aprovado!");
 
                 } else {
@@ -103,7 +103,7 @@ public class ReservaReceiver {
                 if (verificada) {
                     String nomeCompleto = new String(mensagemBytes, "UTF-8");
 
-                    boolean sucesso = ControleCabinesPromocoes.reservaCancelada(nomeCompleto, "caribe", 1);
+                    boolean sucesso = ControleCabinesPromocoes.reservaCancelada(1, nomeCompleto, 1);
                     if (sucesso) {
                         System.out.println("✅ Reserva cancelada para: " + nomeCompleto);
                     } else {
