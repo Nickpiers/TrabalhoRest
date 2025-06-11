@@ -1,35 +1,15 @@
+import { v4 } from "uuid";
+
 export const consultarItinerario = async (body) => {
   console.warn(await requestBack("/reservas/itinerarios", body));
 };
 
-export const criarReserva = async (params) => {
-  const body = {
-    nomeCompleto: "nicolas",
-    dataEmbarque: "10",
-    numeroPassageiros: 2,
-    numeroCabines: 1,
-    idCruzeiro: 1,
-  };
-  escutarLink(body.nomeCompleto);
+export const criarReserva = async (reserva) => {
+  const clientId = v4();
+  const body = { reserva: reserva, clientId };
+
+  escutarLink(clientId);
   console.warn(await requestBack("/reservas/criarReserva", body));
-};
-
-export const escutarLink = (nomeCompleto) => {
-  const eventSource = new EventSource(
-    `http://localhost:8080/reserva/stream/${nomeCompleto}`
-  );
-
-  eventSource.onmessage = (event) => {
-    console.log("🎉 Link recebido:", event.data);
-    alert("Link para pagamento: " + event.data);
-    eventSource.close();
-  };
-
-  eventSource.onerror = (err) => {
-    console.error("Erro SSE:", err);
-    alert("Erro ao escutar link de pagamento.");
-    eventSource.close();
-  };
 };
 
 export const cancelarReserva = async () => {
@@ -76,4 +56,22 @@ export const requestBack = async (uri, body) => {
     setMensagem("Erro na conexão com o backend");
     console.error(err);
   }
+};
+
+export const escutarLink = (clientId) => {
+  const eventSource = new EventSource(
+    `http://localhost:8080/reserva/stream/${clientId}`
+  );
+
+  eventSource.onmessage = (event) => {
+    console.log("🎉 Link recebido:", event.data);
+    alert("Link para pagamento: " + event.data);
+    eventSource.close();
+  };
+
+  eventSource.onerror = (err) => {
+    console.error("Erro SSE:", err);
+    alert("Erro ao escutar link de pagamento.");
+    eventSource.close();
+  };
 };
