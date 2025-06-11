@@ -6,6 +6,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Map;
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/reservas")
 public class ReservaController {
@@ -21,9 +24,11 @@ public class ReservaController {
     }
 
     @PostMapping("/criarReserva")
-    public ResponseEntity<String> criarReserva(@RequestBody ReservaDto reserva) throws Exception {
-        ReservaPublisher.novaReserva(reserva);
-        return ResponseEntity.ok("Reserva criada!");
+    public ResponseEntity<?> criarReserva(@RequestBody ReservaClientIdDTO reserva) throws Exception {
+        if (ReservaPublisher.novaReserva(reserva)) {
+            return ResponseEntity.ok().body("É possível criar reserva");
+        };
+        return ResponseEntity.badRequest().body("Falha ao criar reserva");
     }
 
     @PostMapping("/cancelarReserva")

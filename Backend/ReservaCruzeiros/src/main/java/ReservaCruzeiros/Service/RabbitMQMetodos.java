@@ -1,6 +1,6 @@
 package ReservaCruzeiros.Service;
 
-import ReservaCruzeiros.Reserva.ReservaDto;
+import ReservaCruzeiros.Reserva.ReservaClientIdDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -19,7 +19,7 @@ public class RabbitMQMetodos {
         }
     }
 
-    public static void publisherExchange(String exchangeName, String routingKey, String mensagem, ReservaDto reserva) throws Exception {
+    public static void publisherExchange(String exchangeName, String routingKey, String mensagem, ReservaClientIdDTO reserva) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("localhost");
 

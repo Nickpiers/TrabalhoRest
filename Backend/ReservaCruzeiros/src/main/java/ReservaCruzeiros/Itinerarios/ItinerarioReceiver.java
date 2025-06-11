@@ -1,6 +1,7 @@
 package ReservaCruzeiros.Itinerarios;
 
 import ReservaCruzeiros.Pagamento.PagamentoPublisher;
+import ReservaCruzeiros.Reserva.ReservaClientIdDTO;
 import ReservaCruzeiros.Reserva.ReservaDto;
 import ReservaCruzeiros.Reserva.ReservaSse;
 import ReservaCruzeiros.Service.ControleCabinesPromocoes;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 
 @Component
 public class ItinerarioReceiver {
@@ -37,10 +39,15 @@ public class ItinerarioReceiver {
         channel.queueDeclare(queueName, true, false, false, null);
         channel.queueBind(queueName, exchangeName, routingKey);
 
+        channel.basicQos(1);
+
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String json = new String(delivery.getBody(), StandardCharsets.UTF_8);
             ObjectMapper mapper = new ObjectMapper();
-            ReservaDto reserva = mapper.readValue(json, ReservaDto.class);
+            ReservaClientIdDTO reservaComClientId = mapper.readValue(json, ReservaClientIdDTO.class);
+
+            ReservaDto reserva = reservaComClientId.getReserva();
+            String clientId = reservaComClientId.getClientId();
 
             boolean sucesso = ControleCabinesPromocoes.reservaCriada(
                     reserva.getIdCruzeiro(),
@@ -50,8 +57,10 @@ public class ItinerarioReceiver {
 
             if (sucesso) {
                 try {
-                    String link = gerarLinkPagamento(12345);
-                    reservaSse.enviarLink(reserva.getNomeCompleto(), link);
+                    UUID uuid = UUID.randomUUID();
+                    long idReserva = uuid.getMostSignificantBits() & Long.MAX_VALUE;
+                    String link = gerarLinkPagamento(idReserva);
+                    reservaSse.enviarLink(clientId, link);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -65,7 +74,7 @@ public class ItinerarioReceiver {
         channel.basicConsume(queueName, false, deliverCallback, consumerTag -> {});
     }
 
-    private String gerarLinkPagamento(int idReserva) {
+    private String gerarLinkPagamento(long idReserva) {
         RestTemplate restTemplate = new RestTemplate();
         return restTemplate.postForObject("http://localhost:8080/pagamento/gerarLink?idReserva=" + idReserva, null, String.class);
     }

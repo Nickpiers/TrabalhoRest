@@ -10,7 +10,6 @@ import java.io.IOException;
 public class Service {
     public void inicializaReceivers() throws Exception {
         ReservaReceiver.inicializaAguardaPagamento();
-        PagamentoReceiver.inicializaAguardaNovaReserva();
         BilheteReceiver.inicializaAguardaPagamentoAprovado();
     }
 

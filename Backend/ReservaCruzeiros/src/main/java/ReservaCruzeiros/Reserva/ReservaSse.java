@@ -14,20 +14,18 @@ public class ReservaSse {
 
     private final Map<String, SseEmitter> emissores = new ConcurrentHashMap<>();
 
-    @GetMapping(value = "/stream/{nomeCompleto}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter stream(@PathVariable("nomeCompleto") String nomeCompleto) {
-        System.out.println(nomeCompleto);
+    @GetMapping(value = "/stream/{clientId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter stream(@PathVariable("clientId") String clientId) {
         SseEmitter emitter = new SseEmitter(30000L);
-        emissores.put(nomeCompleto, emitter);
+        emissores.put(clientId, emitter);
 
-        emitter.onCompletion(() -> emissores.remove(nomeCompleto));
-        emitter.onTimeout(() -> emissores.remove(nomeCompleto));
+        emitter.onCompletion(() -> emissores.remove(clientId));
+        emitter.onTimeout(() -> emissores.remove(clientId));
         return emitter;
     }
 
-    public void enviarLink(String nomeCompleto, String link) {
-        System.out.println("Link para pagamento: " + nomeCompleto);
-        SseEmitter emitter = emissores.get(nomeCompleto);
+    public void enviarLink(String clientId, String link) {
+        SseEmitter emitter = emissores.get(clientId);
         if (emitter != null) {
             try {
                 emitter.send(SseEmitter.event().data(link));
