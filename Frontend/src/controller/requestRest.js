@@ -1,9 +1,35 @@
-export const consultarItinerario = async () => {
-  console.warn(await requestBack("/reservas/itinerarios"));
+export const consultarItinerario = async (body) => {
+  console.warn(await requestBack("/reservas/itinerarios", body));
 };
 
-export const criarReserva = async () => {
-  console.warn(await requestBack("/reservas/criarReserva", "cria reserva"));
+export const criarReserva = async (params) => {
+  const body = {
+    nomeCompleto: "nicolas",
+    dataEmbarque: "10",
+    numeroPassageiros: 2,
+    numeroCabines: 1,
+    idCruzeiro: 1,
+  };
+  escutarLink(body.nomeCompleto);
+  console.warn(await requestBack("/reservas/criarReserva", body));
+};
+
+export const escutarLink = (nomeCompleto) => {
+  const eventSource = new EventSource(
+    `http://localhost:8080/reserva/stream/${nomeCompleto}`
+  );
+
+  eventSource.onmessage = (event) => {
+    console.log("🎉 Link recebido:", event.data);
+    alert("Link para pagamento: " + event.data);
+    eventSource.close();
+  };
+
+  eventSource.onerror = (err) => {
+    console.error("Erro SSE:", err);
+    alert("Erro ao escutar link de pagamento.");
+    eventSource.close();
+  };
 };
 
 export const cancelarReserva = async () => {
