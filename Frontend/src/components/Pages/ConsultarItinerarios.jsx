@@ -5,24 +5,21 @@ import { Input } from "../Dumb/Input";
 import { consultarItinerario } from "../../controller/requestRest";
 import { Fundo } from "../Dumb/Fundo";
 import { CruzeiroCard } from "../Dumb/CruzeiroCard";
-import { paths } from "../../controller/paths";
 
 export const ConsultarItinerarios = () => {
-  const navigate = useNavigate();
-
   const [destino, setDestino] = useState("");
   const [dataEmbarque, setDataEmbarque] = useState("");
   const [portoEmbarque, setPortoEmbarque] = useState("");
+  const [listaCruzeiros, setListaCruzeiros] = useState([]);
 
   const buscaItinerarios = async () => {
-    await consultarItinerario({
+    const lista = await consultarItinerario({
       destino,
       dataEmbarque,
       portoEmbarque,
     });
+    setListaCruzeiros(lista);
   };
-
-  const descricaoTeste = `Cruzeiro Mar Azul saindo de Santos em 01 de Agosto com duração de 7 noites.\nVisitando: Ilhabela, Florianópolis, Punta del Este. \nValor por pessoa: R$4200`;
 
   return (
     <div className="flex min-h-screen">
@@ -45,9 +42,10 @@ export const ConsultarItinerarios = () => {
           Consultar
         </button>
         <div className="flex flex-col gap-5">
-          <CruzeiroCard descricaoCruzeiro={descricaoTeste} id={1} />
-          <CruzeiroCard descricaoCruzeiro={descricaoTeste} id={2} />
-          <CruzeiroCard descricaoCruzeiro={descricaoTeste} id={3} />
+          {listaCruzeiros.length > 0 &&
+            listaCruzeiros.map((cruzeiro) => (
+              <CruzeiroCard cruzeiro={cruzeiro} />
+            ))}
         </div>
       </div>
       <Fundo />

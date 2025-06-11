@@ -1,7 +1,7 @@
 import { v4 } from "uuid";
 
 export const consultarItinerario = async (body) => {
-  console.warn(await requestBack("/reservas/itinerarios", body));
+  return await requestBack("/reservas/itinerarios", body);
 };
 
 export const criarReserva = async (reserva) => {
@@ -50,7 +50,7 @@ export const requestBack = async (uri, body) => {
       throw new Error(`Erro HTTP: ${response.status}`);
     }
 
-    const data = await response.text();
+    const data = await response.json();
     return data;
   } catch (err) {
     setMensagem("Erro na conexão com o backend");
