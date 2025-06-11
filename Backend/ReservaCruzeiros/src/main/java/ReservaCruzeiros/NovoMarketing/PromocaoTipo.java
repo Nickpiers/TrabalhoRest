@@ -1,4 +1,4 @@
-package ReservaCruzeiros.Marketing;
+package ReservaCruzeiros.NovoMarketing;
 
 public enum PromocaoTipo {
     PROMO_2_POR_1("2 por 1", "Reservas de 2 por 1 somente por 30 dias!", "primeira"),

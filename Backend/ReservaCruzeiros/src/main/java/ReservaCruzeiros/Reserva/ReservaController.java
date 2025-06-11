@@ -1,8 +1,10 @@
 package ReservaCruzeiros.Reserva;
 
 import ReservaCruzeiros.Itinerarios.ConsultaDTO;
+import ReservaCruzeiros.NovoMarketing.MarketingService;
 import ReservaCruzeiros.Service.RabbitMQMetodos;
 import ReservaCruzeiros.Service.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -10,6 +12,13 @@ import org.springframework.web.client.RestTemplate;
 @RestController
 @RequestMapping("/reservas")
 public class ReservaController {
+
+    private final MarketingService marketingService;
+
+    @Autowired
+    public ReservaController(MarketingService marketingService) {
+        this.marketingService = marketingService;
+    }
 
     @PostMapping("/itinerarios")
     public ResponseEntity<String> chamarOutroEndpoint(@RequestBody ConsultaDTO consulta) {
@@ -35,8 +44,9 @@ public class ReservaController {
     }
 
     @PostMapping("/inscreverPromocao")
-    public ResponseEntity<String> inscreverPromocao(@RequestBody String promocao) {
-        return ResponseEntity.ok("Promocao acionada!");
+    public ResponseEntity<String> inscreverPromocao(@RequestBody int codPromocao) throws Exception {
+        marketingService.inscreveNovoAssinante(codPromocao);
+        return ResponseEntity.ok("Inscrito na promocao!");
     }
 
     @PostMapping("/cancelarPromocao")

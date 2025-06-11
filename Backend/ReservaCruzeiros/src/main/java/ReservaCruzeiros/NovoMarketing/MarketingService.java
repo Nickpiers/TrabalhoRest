@@ -1,7 +1,17 @@
-package ReservaCruzeiros.Marketing;
+package ReservaCruzeiros.NovoMarketing;
 
+import org.springframework.stereotype.Service;
+
+@Service
 public class MarketingService {
-    public static void inscreveNovoAssinante(int codPromocao) throws Exception {
+
+    private final NovoMarketingReceiver novoMarketingReceiver;
+
+    public MarketingService(NovoMarketingReceiver novoMarketingReceiver) {
+        this.novoMarketingReceiver = novoMarketingReceiver;
+    }
+
+    public void inscreveNovoAssinante(int codPromocao) throws Exception {
         PromocaoTipo promocao = switch (codPromocao) {
             case 1 -> PromocaoTipo.PROMO_2_POR_1;
             case 2 -> PromocaoTipo.UPGRADE_VARANDA;
@@ -11,6 +21,6 @@ public class MarketingService {
 
         String nome = promocao.getNome();
         String routingKey = promocao.getRoutingKey();
-        MarketingReceiver.inscreveNaPromocao(nome, routingKey);
+        novoMarketingReceiver.inscreveNaPromocao(nome, routingKey);
     }
 }

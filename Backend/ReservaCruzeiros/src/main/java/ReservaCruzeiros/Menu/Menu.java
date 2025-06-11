@@ -1,8 +1,5 @@
 package ReservaCruzeiros.Menu;
 
-import ReservaCruzeiros.Marketing.MarketingService;
-import ReservaCruzeiros.Reserva.ReservaDto;
-import ReservaCruzeiros.Reserva.ReservaPublisher;
 import ReservaCruzeiros.Service.Service;
 
 import java.util.Scanner;
@@ -101,7 +98,5 @@ public class Menu {
             System.out.println("---------------------------");
             codPromocao = scanner.nextInt();
         } while (codPromocao < 0 || codPromocao > 3);
-
-        if (codPromocao != 0) MarketingService.inscreveNovoAssinante(codPromocao);
     }
 }

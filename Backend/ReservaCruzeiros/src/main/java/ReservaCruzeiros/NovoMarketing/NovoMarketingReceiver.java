@@ -1,16 +1,22 @@
-package ReservaCruzeiros.Marketing;
+package ReservaCruzeiros.NovoMarketing;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
+import org.springframework.stereotype.Component;
 
-public class MarketingReceiver {
+@Component
+public class NovoMarketingReceiver {
 
-    public static void inscreveNaPromocao(String promocaoNome, String routingKey) throws Exception {
+    private final MarketingSse marketingSse;
+
+    public NovoMarketingReceiver(MarketingSse marketingSse) {
+        this.marketingSse = marketingSse;
+    }
+
+    public void inscreveNaPromocao(String promocaoNome, String routingKey) throws Exception {
         final String exchangeName = "promocoes-destino";
-
-        System.out.println("Inscrito para a promoção: " + promocaoNome + "!");
 
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("localhost");
@@ -23,10 +29,12 @@ public class MarketingReceiver {
         channel.queueBind(queueName, exchangeName, routingKey);
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
-            String promocaoDescricao = new String(delivery.getBody(), "UTF-8");
-            System.out.println("!!! PROMOÇÃO RECEBIDA !!!");
-            System.out.println(promocaoDescricao);
-            System.out.println("--------------------------");
+            String codPromocao = new String(delivery.getBody(), "UTF-8");
+            int idPromocao = Integer.parseInt(codPromocao);
+
+            System.out.printf("📨 Promoção recebida: %d\n", idPromocao);
+            marketingSse.enviarPromocaoParaTodos(idPromocao, "🎉 promoção recebida");
+
             channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
         };
 
