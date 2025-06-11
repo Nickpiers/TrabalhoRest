@@ -83,7 +83,6 @@ export const escutarPromocao = (clientId, idPromocao) => {
 
   eventSource.onmessage = (event) => {
     alert(event.data);
-    eventSource.close();
   };
 
   eventSource.onerror = (err) => {
