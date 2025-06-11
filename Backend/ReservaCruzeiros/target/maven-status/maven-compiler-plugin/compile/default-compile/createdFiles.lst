@@ -7,7 +7,9 @@ ReservaCruzeiros\Marketing\MarketingReceiver.class
 ReservaCruzeiros\Service\RabbitMQMetodos.class
 ReservaCruzeiros\Pagamento\PagamentoPublisher.class
 ReservaCruzeiros\Bilhete\BilhetePublisher.class
+ReservaCruzeiros\Reserva\ReservaApplication.class
 ReservaCruzeiros\Marketing\MarketingService.class
+ReservaCruzeiros\Reserva\ReservaController.class
 ReservaCruzeiros\AdminPagamento.class
 ReservaCruzeiros\Reserva\ReservaReceiver.class
 ReservaCruzeiros\Cliente.class

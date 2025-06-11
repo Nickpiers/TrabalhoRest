@@ -1,7 +1,7 @@
 package ReservaCruzeiros;
 
-import ReservaCruzeiros.Marketing.MarketingPublisher;
-import ReservaCruzeiros.Marketing.PromocaoTipo;
+import ReservaCruzeiros.NovoMarketing.PromocaoTipo;
+import ReservaCruzeiros.NovoMarketing.NovoMarketingPublisher;
 
 import java.util.Scanner;
 
@@ -27,7 +27,7 @@ public class AdminPromocao {
                 default -> null;
             };
 
-            if (codPromocao > 0 && codPromocao < 4) MarketingPublisher.publicaPromocao(promocao.getDescricao(), promocao.getRoutingKey());
+            if (codPromocao > 0 && codPromocao < 4) NovoMarketingPublisher.publicaPromocao(codPromocao, promocao.getRoutingKey());
             else if (codPromocao == 0) {
                 System.out.println("Saindo...");
             } else {

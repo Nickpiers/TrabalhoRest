@@ -16,7 +16,7 @@ public class PagamentoPublisher {
 
     private static void aprovaPagamento(String nomeCompleto) throws Exception {
         String mesangemCriptografada = Criptografia.criptografaMensagem(nomeCompleto);
-        RabbitMQMetodos.publisherExchange("pagamento-aprovado", "pagamento", mesangemCriptografada);
+        RabbitMQMetodos.publisherExchange("pagamento-aprovado", "pagamento", mesangemCriptografada, null);
     }
 
     private static void recusaPagamento(String nomeCompleto) throws Exception {

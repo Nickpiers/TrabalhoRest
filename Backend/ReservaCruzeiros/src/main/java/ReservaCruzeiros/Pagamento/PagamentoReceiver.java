@@ -1,6 +1,9 @@
 package ReservaCruzeiros.Pagamento;
 
+import ReservaCruzeiros.Reserva.ReservaDto;
+import ReservaCruzeiros.Service.ControleCabinesPromocoes;
 import ReservaCruzeiros.Service.Service;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.*;
 
 import java.nio.charset.StandardCharsets;
@@ -25,12 +28,21 @@ public class PagamentoReceiver {
         channel.queueBind(queueName, exchangeName, routingKey);
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
-            String nomeCompleto = new String(delivery.getBody(), StandardCharsets.UTF_8);
-            try {
-                aguardaAprovacao(nomeCompleto);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+            String json = new String(delivery.getBody(), StandardCharsets.UTF_8);
+            ObjectMapper mapper = new ObjectMapper();
+            ReservaDto reserva = mapper.readValue(json, ReservaDto.class);
+
+            boolean sucesso = ControleCabinesPromocoes.reservaCriada(reserva.getIdCruzeiro(), reserva.getNomeCompleto(), reserva.getNumeroCabines());
+            if (sucesso) {
+                try {
+                    aguardaAprovacao(reserva.getNomeCompleto());
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                System.out.println("❌ Reserva falhou. Sem cabines disponíveis.");
             }
+
             channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
         };
 

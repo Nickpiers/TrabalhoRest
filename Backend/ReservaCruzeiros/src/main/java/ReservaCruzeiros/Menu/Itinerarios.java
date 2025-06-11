@@ -1,7 +1,9 @@
 package ReservaCruzeiros.Menu;
 
+import ReservaCruzeiros.Service.CriarCruzeiro;
 import ReservaCruzeiros.Service.Service;
 
+import java.util.List;
 import java.util.Scanner;
 
 public class Itinerarios {
@@ -37,4 +39,18 @@ public class Itinerarios {
 
         return codEscolhido;
     }
+
+    public List<CriarCruzeiro> mostrarItinerarios(String destino, String dataEmbarque, String portoEmbarque) {
+        CriarCruzeiro criador = new CriarCruzeiro();
+        List<CriarCruzeiro> cruzeiros = criador.criar();
+
+        return cruzeiros.stream()
+                .filter(c -> (destino == null || c.getLugaresVisitados().toLowerCase().contains(destino.toLowerCase())) &&
+                        (dataEmbarque == null || c.getDatasDisponiveis().toLowerCase().contains(dataEmbarque.toLowerCase())) &&
+                        (portoEmbarque == null || c.getPortoEmbarque().toLowerCase().contains(portoEmbarque.toLowerCase())))
+                .toList();
+    }
+
+
+
 }

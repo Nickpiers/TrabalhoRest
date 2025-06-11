@@ -1,5 +1,7 @@
 package ReservaCruzeiros.Service;
 
+import ReservaCruzeiros.Reserva.ReservaClientIdDTO;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
@@ -17,14 +19,26 @@ public class RabbitMQMetodos {
         }
     }
 
-    public static void publisherExchange(String exchangeName, String routingKey, String mensagem) throws Exception {
+    public static void publisherExchange(String exchangeName, String routingKey, String mensagem, ReservaClientIdDTO reserva) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("localhost");
+
         try (Connection connection = factory.newConnection();
              Channel channel = connection.createChannel()) {
+
             channel.exchangeDeclare(exchangeName, "direct");
 
-            channel.basicPublish(exchangeName, routingKey, null, mensagem.getBytes("UTF-8"));
+            byte[] payload;
+
+            if (reserva != null) {
+                ObjectMapper mapper = new ObjectMapper();
+                String json = mapper.writeValueAsString(reserva);
+                payload = json.getBytes("UTF-8");
+            } else {
+                payload = mensagem.getBytes("UTF-8");
+            }
+
+            channel.basicPublish(exchangeName, routingKey, null, payload);
         }
     }
 }
