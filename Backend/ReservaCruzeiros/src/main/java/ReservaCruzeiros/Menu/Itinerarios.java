@@ -40,24 +40,17 @@ public class Itinerarios {
         return codEscolhido;
     }
 
-    public void mostrarItinerarios(String destino, String dataEmbarque, String portoEmbarque) {
+    public List<CriarCruzeiro> mostrarItinerarios(String destino, String dataEmbarque, String portoEmbarque) {
         CriarCruzeiro criador = new CriarCruzeiro();
         List<CriarCruzeiro> cruzeiros = criador.criar();
 
-        boolean encontrou = false;
-        for (CriarCruzeiro c : cruzeiros) {
-            if ((destino == null || c.getLugaresVisitados().toLowerCase().contains(destino.toLowerCase())) &&
-                    (dataEmbarque == null || c.getDatasDisponiveis().contains(dataEmbarque)) &&
-                    (portoEmbarque == null || c.getPortoEmbarque().toLowerCase().contains(portoEmbarque.toLowerCase()))) {
-
-                System.out.println(c);
-                encontrou = true;
-            }
-        }
-
-        if (!encontrou) {
-            System.out.println("❌ Nenhum cruzeiro encontrado com os critérios informados.");
-        }
+        return cruzeiros.stream()
+                .filter(c -> (destino == null || c.getLugaresVisitados().toLowerCase().contains(destino.toLowerCase())) &&
+                        (dataEmbarque == null || c.getDatasDisponiveis().toLowerCase().contains(dataEmbarque.toLowerCase())) &&
+                        (portoEmbarque == null || c.getPortoEmbarque().toLowerCase().contains(portoEmbarque.toLowerCase())))
+                .toList();
     }
+
+
 
 }

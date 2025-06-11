@@ -2,12 +2,15 @@ package ReservaCruzeiros.Reserva;
 
 import ReservaCruzeiros.Itinerarios.ConsultaDTO;
 import ReservaCruzeiros.NovoMarketing.MarketingService;
+import ReservaCruzeiros.Service.CriarCruzeiro;
 import ReservaCruzeiros.Service.RabbitMQMetodos;
 import ReservaCruzeiros.Service.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/reservas")
@@ -21,14 +24,23 @@ public class ReservaController {
     }
 
     @PostMapping("/itinerarios")
-    public ResponseEntity<String> chamarOutroEndpoint(@RequestBody ConsultaDTO consulta) {
+    public ResponseEntity<List<CriarCruzeiro>> chamarOutroEndpoint(@RequestBody ConsultaDTO consulta) {
         RestTemplate restTemplate = new RestTemplate();
 
         String url = "http://localhost:8080/itinerarios/consultar";
-        String resposta = restTemplate.postForObject(url, consulta, String.class);
 
-        return ResponseEntity.ok("Resposta interna: " + resposta);
+        ResponseEntity<CriarCruzeiro[]> response = restTemplate.postForEntity(url, consulta, CriarCruzeiro[].class);
+        CriarCruzeiro[] arrayCruzeiros = response.getBody();
+
+        if (arrayCruzeiros == null || arrayCruzeiros.length == 0) {
+            return ResponseEntity.status(404).build();
+        }
+
+        List<CriarCruzeiro> listaCruzeiros = List.of(arrayCruzeiros);
+
+        return ResponseEntity.ok(listaCruzeiros);
     }
+
 
     @PostMapping("/criarReserva")
     public ResponseEntity<?> criarReserva(@RequestBody ReservaClientIdDTO reserva) throws Exception {
