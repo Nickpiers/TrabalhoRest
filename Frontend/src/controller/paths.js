@@ -4,4 +4,6 @@ export const paths = {
   promocoes: "/promocoes",
   marcarReserva: "/marcar-reserva",
   cancelarReserva: "/cancelar-reserva",
+  inscreverPromocao: "/inscrever-promocao",
+  cancelarPromocao: "/cancelar-promocao",
 };

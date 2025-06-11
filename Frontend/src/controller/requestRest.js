@@ -18,16 +18,16 @@ export const cancelarReserva = async () => {
   );
 };
 
-export const inscreverPromocao = async () => {
-  console.warn(
-    await requestBack("/reservas/inscreverPromocao", "inscreve varanda")
-  );
+export const inscreverPromocao = async (promocao) => {
+  const clientId = v4();
+  const body = { promocao, clientId };
+
+  escutarPromocao(clientId, promocao);
+  console.warn(await requestBack("/reservas/inscreverPromocao", promocao));
 };
 
-export const cancelarPromocao = async () => {
-  console.warn(
-    await requestBack("/reservas/cancelarPromocao", "cancela varanda")
-  );
+export const cancelarPromocao = async (promocao) => {
+  console.warn(await requestBack("/reservas/cancelarPromocao", promocao));
 };
 
 export const requestBack = async (uri, body) => {
@@ -72,6 +72,21 @@ export const escutarLink = (clientId) => {
   eventSource.onerror = (err) => {
     console.error("Erro SSE:", err);
     alert("Erro ao escutar link de pagamento.");
+    eventSource.close();
+  };
+};
+
+export const escutarPromocao = (clientId, idPromocao) => {
+  const eventSource = new EventSource(
+    `http://localhost:8080/marketing/stream/${idPromocao}/${clientId}`
+  );
+
+  eventSource.onmessage = (event) => {
+    alert(event.data);
+    eventSource.close();
+  };
+
+  eventSource.onerror = (err) => {
     eventSource.close();
   };
 };
