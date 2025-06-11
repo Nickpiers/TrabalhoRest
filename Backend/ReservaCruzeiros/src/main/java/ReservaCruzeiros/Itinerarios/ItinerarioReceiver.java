@@ -1,6 +1,5 @@
 package ReservaCruzeiros.Itinerarios;
 
-import ReservaCruzeiros.Pagamento.PagamentoPublisher;
 import ReservaCruzeiros.Reserva.ReservaClientIdDTO;
 import ReservaCruzeiros.Reserva.ReservaDto;
 import ReservaCruzeiros.Reserva.ReservaSse;

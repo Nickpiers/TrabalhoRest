@@ -1,13 +1,11 @@
 package ReservaCruzeiros.Reserva;
 
 import ReservaCruzeiros.Itinerarios.ConsultaDTO;
+import ReservaCruzeiros.Service.RabbitMQMetodos;
 import ReservaCruzeiros.Service.Service;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/reservas")
@@ -51,6 +49,12 @@ public class ReservaController {
         final Service service = new Service();
         service.inicializaReceivers();
         return ResponseEntity.ok("Conexão bem-sucedida com o backend!");
+    }
+
+    @PostMapping("/pagamento")
+    public ResponseEntity<String> pagamentoReserva(@RequestBody PagamentoClienteDTO pagamento) throws Exception {
+        RabbitMQMetodos.publisherExchange("pagamento-para-aprovar", "pagamento", null, null);
+        return ResponseEntity.ok("Promocao cancelada!");
     }
 }
 

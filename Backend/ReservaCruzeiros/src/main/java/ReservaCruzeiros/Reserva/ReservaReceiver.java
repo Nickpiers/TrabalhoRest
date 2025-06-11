@@ -56,7 +56,7 @@ public class ReservaReceiver {
 
                 if (verificada) {
                     String nomeCompleto = new String(mensagemBytes, "UTF-8");
-                    ControleCabinesPromocoes.confirmaReserva(1, nomeCompleto, 1);
+                    ControleCabinesPromocoes.confirmaReserva(1, nomeCompleto, 1, 2);
                     System.out.println("✅ Assinatura verificada. Pagamento de '" + nomeCompleto + "' foi aprovado!");
 
                 } else {
