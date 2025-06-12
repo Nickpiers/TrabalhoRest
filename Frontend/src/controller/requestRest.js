@@ -7,7 +7,9 @@ export const consultarItinerario = async (body) => {
 
 export const criarReserva = async (reserva, navigate) => {
   const clientId = v4();
-  const body = { reserva: reserva, clientId };
+  const idReserva = generateJavaLikeId();
+
+  const body = { reserva: reserva, clientId, idReserva };
 
   escutarLink(clientId, navigate);
   try {
@@ -93,3 +95,14 @@ export const escutarPromocao = (clientId, idPromocao) => {
     eventSource.close();
   };
 };
+
+function generateJavaLikeId() {
+  const uuid = v4();
+  const mostSigBitsHex = uuid.replace(/-/g, "").substring(0, 16);
+  let id = BigInt("0x" + mostSigBitsHex);
+
+  const longMax = BigInt("0x7FFFFFFFFFFFFFFF");
+  id = id & longMax;
+
+  return id.toString();
+}
