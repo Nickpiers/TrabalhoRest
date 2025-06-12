@@ -26,7 +26,7 @@ public class ItinerarioReceiver {
     @PostConstruct
     public void inicializaAguardaNovaReserva() throws Exception {
         final String exchangeName = "reserva-criada";
-        final String queueName = "fila-pagamento-receiver";
+        final String queueName = "fila-itinerario-receiver";
         final String routingKey = "pagamento";
 
         ConnectionFactory factory = new ConnectionFactory();
