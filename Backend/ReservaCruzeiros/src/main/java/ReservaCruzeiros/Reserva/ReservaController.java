@@ -10,7 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/reservas")
@@ -45,10 +47,18 @@ public class ReservaController {
     @PostMapping("/criarReserva")
     public ResponseEntity<?> criarReserva(@RequestBody ReservaClientIdDTO reserva) throws Exception {
         if (ReservaPublisher.novaReserva(reserva)) {
-            return ResponseEntity.ok().body("É possível criar reserva");
-        };
-        return ResponseEntity.badRequest().body("Falha ao criar reserva");
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "É possível criar reserva");
+            return ResponseEntity.ok(response);
+        }
+
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("success", false);
+        errorResponse.put("message", "Falha ao criar reserva");
+        return ResponseEntity.badRequest().body(errorResponse);
     }
+
 
     @PostMapping("/cancelarReserva")
     public ResponseEntity<String> cancelarReserva(@RequestBody String reserva) {
