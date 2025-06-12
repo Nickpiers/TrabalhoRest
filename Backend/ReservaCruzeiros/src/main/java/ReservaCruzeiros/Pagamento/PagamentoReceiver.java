@@ -71,12 +71,20 @@ public class PagamentoReceiver {
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String body = new String(delivery.getBody(), StandardCharsets.UTF_8);
-            boolean aprovado = Boolean.parseBoolean(body);
+            ObjectMapper mapper = new ObjectMapper();
+            PagamentoDTO pagamentoDTO = mapper.readValue(body, PagamentoDTO.class);
+
+            ReservaClientIdDTO reserva = pagamentoDTO.getReservaClientIdDTO();
+            ReservaDto reservaDto = reserva.getReserva();
+            String aprovadoStr = pagamentoDTO.getAprovado();
+            boolean aprovado = Boolean.parseBoolean(aprovadoStr);
+            long idReserva = pagamentoDTO.getIdReserva();
+
             String aprovacao = aprovado ? "aprovado" : "recusado";
 
             try {
                 PagamentoPublisher pagamentoPublisher = new PagamentoPublisher();
-                pagamentoPublisher.processaPagamento(nomeCompleto, aprovacao);
+                pagamentoPublisher.processaPagamento(pagamentoDTO, aprovacao);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

@@ -85,7 +85,7 @@ public class ReservaController {
 
     @PostMapping("/pagamento")
     public ResponseEntity<String> pagamentoReserva(@RequestBody PagamentoClienteDTO pagamento) throws Exception {
-        RabbitMQMetodos.publisherExchange("pagamento-para-aprovar", "pagamento", null, null);
+        RabbitMQMetodos.publisherExchange("pagamento-para-aprovar", "pagamento", null, null, null);
         return ResponseEntity.ok("Promocao cancelada!");
     }
 }

@@ -1,8 +1,10 @@
 package ReservaCruzeiros.Reserva;
 
 import ReservaCruzeiros.Criptografia.Criptografia;
+import ReservaCruzeiros.Pagamento.PagamentoDTO;
 import ReservaCruzeiros.Service.ControleCabinesPromocoes;
 import ReservaCruzeiros.Service.Service;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
@@ -46,22 +48,16 @@ public class ReservaReceiver {
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             try {
-                String jsonStr = new String(delivery.getBody(), "UTF-8");
-                JSONObject json = new JSONObject(jsonStr);
+                String body = new String(delivery.getBody(), StandardCharsets.UTF_8);
+                ObjectMapper mapper = new ObjectMapper();
+                PagamentoDTO pagamentoDTO = mapper.readValue(body, PagamentoDTO.class);
+                String nomeCompleto = pagamentoDTO.getReservaClientIdDTO().getReserva().getNomeCompleto();
+                int cruzeiro = pagamentoDTO.getReservaClientIdDTO().getReserva().getIdCruzeiro();
+                int quantidadeCabines = pagamentoDTO.getReservaClientIdDTO().getReserva().getNumeroCabines();
+                long idReserva = pagamentoDTO.getIdReserva();
 
-                String mensagemBase64 = json.getString("mensagem");
-                byte[] mensagemBytes = Base64.getDecoder().decode(mensagemBase64);
-
-                boolean verificada = Criptografia.verificaMensagem(json);
-
-                if (verificada) {
-                    String nomeCompleto = new String(mensagemBytes, "UTF-8");
-                    ControleCabinesPromocoes.confirmaReserva(1, nomeCompleto, 1, 2);
-                    System.out.println("✅ Assinatura verificada. Pagamento de '" + nomeCompleto + "' foi aprovado!");
-
-                } else {
-                    System.out.println("❌ Assinatura inválida! Pagamento possivelmente adulterado.");
-                }
+                ControleCabinesPromocoes.confirmaReserva(cruzeiro, nomeCompleto, quantidadeCabines, idReserva);
+                System.out.println("✅ Assinatura verificada. Pagamento de '" + nomeCompleto + "' foi aprovado!");
 
                 channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
             } catch (Exception e) {

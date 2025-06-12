@@ -1,16 +1,21 @@
 package ReservaCruzeiros.Pagamento;
 
+import ReservaCruzeiros.Reserva.ReservaClientIdDTO;
+import ReservaCruzeiros.Reserva.ReservaDto;
 import ReservaCruzeiros.Service.RabbitMQMetodos;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.*;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 public class AprovaPagamentoAdmin {
-    private static void aprovaPagamento(int codAprovacao) throws Exception {
+    private static void aprovaPagamento(ReservaClientIdDTO reserva, long idReserva, int codAprovacao) throws Exception {
         boolean aprovado = codAprovacao == 1;
         String aprovadoStr = Boolean.toString(aprovado);
+        PagamentoDTO pagamentoDTO = new PagamentoDTO(reserva, aprovadoStr, idReserva);
 
-        RabbitMQMetodos.publisherQueue("aprova-pagamento", aprovadoStr);
+        RabbitMQMetodos.publisherQueue("aprova-pagamento", null, pagamentoDTO);
     };
 
     public static void recebeReservaCriada() throws Exception {
@@ -28,8 +33,12 @@ public class AprovaPagamentoAdmin {
         channel.queueBind(queueName, exchangeName, routingKey);
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+            String json = new String(delivery.getBody(), StandardCharsets.UTF_8);
+            ObjectMapper mapper = new ObjectMapper();
+            ReservaClientIdDTO reservaComClientId = mapper.readValue(json, ReservaClientIdDTO.class);
+
             try {
-                aprovarPagamento();
+                aprovarPagamento(reservaComClientId, reservaComClientId.getIdReserva());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -39,7 +48,7 @@ public class AprovaPagamentoAdmin {
         channel.basicConsume(queueName, false, deliverCallback, consumerTag -> {});
     }
 
-    private static void aprovarPagamento() throws Exception {
+    private static void aprovarPagamento(ReservaClientIdDTO reserva, long idReserva) throws Exception {
         Scanner scanner = new Scanner(System.in);
 
         int codAprovacao;
@@ -52,6 +61,6 @@ public class AprovaPagamentoAdmin {
         }while(codAprovacao != 1 && codAprovacao != 2);
 
         System.out.println("APROVADO/RECUSADO ENVIADO!");
-        AprovaPagamentoAdmin.aprovaPagamento(codAprovacao);
+        AprovaPagamentoAdmin.aprovaPagamento(reserva, idReserva, codAprovacao);
     }
 }
