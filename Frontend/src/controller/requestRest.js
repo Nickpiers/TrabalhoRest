@@ -1,15 +1,20 @@
 import { v4 } from "uuid";
+import { paths } from "./paths";
 
 export const consultarItinerario = async (body) => {
   return await requestBack("/reservas/itinerarios", body);
 };
 
-export const criarReserva = async (reserva) => {
+export const criarReserva = async (reserva, navigate) => {
   const clientId = v4();
   const body = { reserva: reserva, clientId };
 
-  escutarLink(clientId);
-  console.warn(await requestBack("/reservas/criarReserva", body));
+  escutarLink(clientId, navigate);
+  try {
+    await requestBack("/reservas/criarReserva", body);
+  } catch (error) {
+    alert("Não foi possível fazer a reserva! Reveja seus dados!");
+  }
 };
 
 export const cancelarReserva = async () => {
@@ -53,15 +58,17 @@ export const requestBack = async (uri, body) => {
     return data;
   } catch (err) {
     console.error(err);
+    throw err;
   }
 };
 
-export const escutarLink = (clientId) => {
+export const escutarLink = (clientId, navigate) => {
   const eventSource = new EventSource(
     `http://localhost:8080/reserva/stream/${clientId}`
   );
 
   eventSource.onmessage = (event) => {
+    navigate(paths.home);
     console.log("🎉 Link recebido:", event.data);
     alert("Link para pagamento: " + event.data);
     eventSource.close();
@@ -69,7 +76,6 @@ export const escutarLink = (clientId) => {
 
   eventSource.onerror = (err) => {
     console.error("Erro SSE:", err);
-    alert("Erro ao escutar link de pagamento.");
     eventSource.close();
   };
 };

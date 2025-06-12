@@ -1,4 +1,5 @@
 export const paths = {
+  home: "/",
   consultarItinerarios: "/consultar-itinerarios",
   reservas: "/reservas",
   promocoes: "/promocoes",

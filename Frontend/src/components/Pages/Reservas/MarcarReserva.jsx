@@ -4,9 +4,10 @@ import { Cabecalho } from "../../Dumb/Cabecalho";
 import { Fundo } from "../../Dumb/Fundo";
 import { Input } from "../../Dumb/Input";
 import { CruzeiroCard } from "../../Dumb/CruzeiroCard";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export const MarcarReserva = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   const { cruzeiro } = location.state;
 
@@ -16,13 +17,16 @@ export const MarcarReserva = () => {
   const [numeroCabines, setNumeroCabines] = useState("");
 
   const marcarReserva = async () => {
-    await criarReserva({
-      nomeCompleto,
-      dataEmbarque,
-      numeroPassageiros,
-      numeroCabines,
-      idCruzeiro: cruzeiro.idCruzeiro,
-    });
+    await criarReserva(
+      {
+        nomeCompleto,
+        dataEmbarque,
+        numeroPassageiros,
+        numeroCabines,
+        idCruzeiro: cruzeiro.idCruzeiro,
+      },
+      navigate
+    );
   };
 
   return (
