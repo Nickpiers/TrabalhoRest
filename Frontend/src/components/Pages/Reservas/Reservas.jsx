@@ -12,7 +12,7 @@ export const Reservas = () => {
         <Cabecalho titulo="Reservas" />
         <button
           className="mb-30 mt-5"
-          onClick={() => navigate(paths.marcarReserva)}
+          onClick={() => navigate(paths.consultarItinerarios)}
         >
           Criar nova reserva
         </button>

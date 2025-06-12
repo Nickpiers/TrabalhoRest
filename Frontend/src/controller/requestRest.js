@@ -46,14 +46,12 @@ export const requestBack = async (uri, body) => {
     const response = await fetch(`http://localhost:8080${uri}`, options);
 
     if (!response.ok) {
-      setMensagem("Erro na conexão com o backend");
       throw new Error(`Erro HTTP: ${response.status}`);
     }
 
     const data = await response.json();
     return data;
   } catch (err) {
-    setMensagem("Erro na conexão com o backend");
     console.error(err);
   }
 };

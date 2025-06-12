@@ -44,7 +44,7 @@ export const ConsultarItinerarios = () => {
         <div className="flex flex-col gap-5">
           {listaCruzeiros.length > 0 &&
             listaCruzeiros.map((cruzeiro) => (
-              <CruzeiroCard cruzeiro={cruzeiro} />
+              <CruzeiroCard cruzeiro={cruzeiro} veioDoConsultarItinerario />
             ))}
         </div>
       </div>
