@@ -1,14 +1,14 @@
 package ReservaCruzeiros.Bilhete;
 
-import ReservaCruzeiros.Criptografia.Criptografia;
+import ReservaCruzeiros.Pagamento.PagamentoDTO;
 import ReservaCruzeiros.Service.Service;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
-import org.json.JSONObject;
 
-import java.util.Base64;
+import java.nio.charset.StandardCharsets;
 
 public class BilheteReceiver {
     private static final String EXCHANGE_NAME = "pagamento-aprovado";
@@ -30,19 +30,13 @@ public class BilheteReceiver {
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             try {
-                String jsonStr = new String(delivery.getBody(), "UTF-8");
-                JSONObject json = new JSONObject(jsonStr);
+                String body = new String(delivery.getBody(), StandardCharsets.UTF_8);
+                ObjectMapper mapper = new ObjectMapper();
+                PagamentoDTO pagamentoDTO = mapper.readValue(body, PagamentoDTO.class);
+                String nomeCompleto = pagamentoDTO.getReservaClientIdDTO().getReserva().getNomeCompleto();
 
-                String mensagemBase64 = json.getString("mensagem");
-                byte[] mensagemBytes = Base64.getDecoder().decode(mensagemBase64);
-
-                boolean verificada = Criptografia.verificaMensagem(json);
-
-                if (verificada) {
-                    String nomeCompleto = new String(mensagemBytes, "UTF-8");
-                    BilhetePublisher bilhetePublisher = new BilhetePublisher();
-                    bilhetePublisher.geraBilhete(nomeCompleto);
-                }
+                BilhetePublisher bilhetePublisher = new BilhetePublisher();
+                bilhetePublisher.geraBilhete(nomeCompleto);
 
                 channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
             } catch (Exception e) {

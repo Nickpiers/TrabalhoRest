@@ -5,22 +5,20 @@ import ReservaCruzeiros.Service.RabbitMQMetodos;
 
 public class PagamentoPublisher {
 
-    public void processaPagamento(String nomeCompleto, String pagamento) throws Exception {
+    public void processaPagamento(PagamentoDTO pagamentoDTO, String pagamento) throws Exception {
         if (pagamento.equals("aprovado")) {
-            aprovaPagamento(nomeCompleto);
+            aprovaPagamento(pagamentoDTO);
         }
         else {
-            recusaPagamento(nomeCompleto);
+            recusaPagamento(pagamentoDTO);
         }
     };
 
-    private static void aprovaPagamento(String nomeCompleto) throws Exception {
-        String mesangemCriptografada = Criptografia.criptografaMensagem(nomeCompleto);
-        RabbitMQMetodos.publisherExchange("pagamento-aprovado", "pagamento", mesangemCriptografada, null);
+    private static void aprovaPagamento(PagamentoDTO pagamentoDTO) throws Exception {
+        RabbitMQMetodos.publisherExchange("pagamento-aprovado", "pagamento", null, null, pagamentoDTO);
     }
 
-    private static void recusaPagamento(String nomeCompleto) throws Exception {
-        String mensagemCriptografada = Criptografia.criptografaMensagem(nomeCompleto);
-        RabbitMQMetodos.publisherQueue("pagamento-recusado", mensagemCriptografada);
+    private static void recusaPagamento(PagamentoDTO pagamentoDTO) throws Exception {
+        RabbitMQMetodos.publisherQueue("pagamento-recusado", null, pagamentoDTO);
     }
 }

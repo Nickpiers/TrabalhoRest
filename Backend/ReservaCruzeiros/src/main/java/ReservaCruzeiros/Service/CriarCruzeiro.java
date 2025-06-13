@@ -11,15 +11,17 @@ public class CriarCruzeiro {
     String lugaresVisitados;
     int numeroNoites;
     int valorPorPessoa;
+    int idCruzeiro;
 
     public CriarCruzeiro(String datasDisponiveis, String nomeNavio, String portoEmbarque,
-                         String lugaresVisitados, int numeroNoites, int valorPorPessoa) {
+                         String lugaresVisitados, int numeroNoites, int valorPorPessoa, int idCruzeiro) {
         this.datasDisponiveis = datasDisponiveis;
         this.nomeNavio = nomeNavio;
         this.portoEmbarque = portoEmbarque;
         this.lugaresVisitados = lugaresVisitados;
         this.numeroNoites = numeroNoites;
         this.valorPorPessoa = valorPorPessoa;
+        this.idCruzeiro = idCruzeiro;
     }
 
     public CriarCruzeiro() {}
@@ -36,17 +38,17 @@ public class CriarCruzeiro {
 
         lista.add(new CriarCruzeiro(
                 "10 de julho", "Navio Estelar", "Rio de Janeiro",
-                "Búzios, Salvador, Recife", 5, 3500
+                "Búzios, Salvador, Recife", 5, 3500, 1
         ));
 
         lista.add(new CriarCruzeiro(
                 "01 de Agosto", "Mar Azul", "Santos",
-                "Ilhabela, Florianópolis, Punta del Este", 7, 4200
+                "Ilhabela, Florianópolis, Punta del Este", 7, 4200, 2
         ));
 
         lista.add(new CriarCruzeiro(
                 "20 de dezembro", "Oceano Real", "Fortaleza",
-                "Fernando de Noronha, Natal, João Pessoa", 7, 4800
+                "Fernando de Noronha, Natal, João Pessoa", 7, 4800, 3
         ));
 
         return lista;
@@ -74,6 +76,10 @@ public class CriarCruzeiro {
 
     public int getValorPorPessoa() {
         return valorPorPessoa;
+    }
+
+    public int getIdCruzeiro() {
+        return idCruzeiro;
     }
 
 }

@@ -1,19 +1,21 @@
 package ReservaCruzeiros.Pagamento;
 
+import ReservaCruzeiros.Reserva.ReservaClientIdDTO;
 import ReservaCruzeiros.Reserva.ReservaDto;
 import ReservaCruzeiros.Service.ControleCabinesPromocoes;
 import ReservaCruzeiros.Service.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.*;
+import jakarta.annotation.PostConstruct;
+import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 
+@Component
 public class PagamentoReceiver {
 
-    private static Channel canalNovaReserva;
-    private static String tagNovaReserva;
-
-    public static void inicializaAguardaNovaReserva() throws Exception {
+    @PostConstruct
+    public void inicializaAguardaNovaReserva() throws Exception {
         final String exchangeName = "reserva-criada";
         final String queueName = "fila-pagamento-receiver";
         final String routingKey = "pagamento";
@@ -30,9 +32,16 @@ public class PagamentoReceiver {
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String json = new String(delivery.getBody(), StandardCharsets.UTF_8);
             ObjectMapper mapper = new ObjectMapper();
-            ReservaDto reserva = mapper.readValue(json, ReservaDto.class);
+            ReservaClientIdDTO reservaComClientId = mapper.readValue(json, ReservaClientIdDTO.class);
 
-            boolean sucesso = ControleCabinesPromocoes.reservaCriada(reserva.getIdCruzeiro(), reserva.getNomeCompleto(), reserva.getNumeroCabines());
+            ReservaDto reserva = reservaComClientId.getReserva();
+            String clientId = reservaComClientId.getClientId();
+
+            boolean sucesso = ControleCabinesPromocoes.reservaCriada(
+                    reserva.getIdCruzeiro(),
+                    reserva.getNomeCompleto(),
+                    reserva.getNumeroCabines()
+            );
             if (sucesso) {
                 try {
                     aguardaAprovacao(reserva.getNomeCompleto());
@@ -46,15 +55,10 @@ public class PagamentoReceiver {
             channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
         };
 
-        tagNovaReserva = channel.basicConsume(queueName, false, deliverCallback, consumerTag -> {});
-        canalNovaReserva = channel;
+        channel.basicConsume(queueName, false, deliverCallback, consumerTag -> {});
     }
 
-    public static void pararNovaReserva() throws Exception {
-        Service.pararReceiver(canalNovaReserva, tagNovaReserva);
-    }
-
-    private static void aguardaAprovacao(String nomeCompleto) throws Exception {
+    private void aguardaAprovacao(String nomeCompleto) throws Exception {
         String queueName = "aprova-pagamento";
 
         ConnectionFactory factory = new ConnectionFactory();
@@ -67,12 +71,20 @@ public class PagamentoReceiver {
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String body = new String(delivery.getBody(), StandardCharsets.UTF_8);
-            boolean aprovado = Boolean.parseBoolean(body);
+            ObjectMapper mapper = new ObjectMapper();
+            PagamentoDTO pagamentoDTO = mapper.readValue(body, PagamentoDTO.class);
+
+            ReservaClientIdDTO reserva = pagamentoDTO.getReservaClientIdDTO();
+            ReservaDto reservaDto = reserva.getReserva();
+            String aprovadoStr = pagamentoDTO.getAprovado();
+            boolean aprovado = Boolean.parseBoolean(aprovadoStr);
+            long idReserva = pagamentoDTO.getIdReserva();
+
             String aprovacao = aprovado ? "aprovado" : "recusado";
 
             try {
                 PagamentoPublisher pagamentoPublisher = new PagamentoPublisher();
-                pagamentoPublisher.processaPagamento(nomeCompleto, aprovacao);
+                pagamentoPublisher.processaPagamento(pagamentoDTO, aprovacao);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

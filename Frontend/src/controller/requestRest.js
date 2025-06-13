@@ -1,15 +1,22 @@
 import { v4 } from "uuid";
+import { paths } from "./paths";
 
 export const consultarItinerario = async (body) => {
   return await requestBack("/reservas/itinerarios", body);
 };
 
-export const criarReserva = async (reserva) => {
+export const criarReserva = async (reserva, navigate) => {
   const clientId = v4();
-  const body = { reserva: reserva, clientId };
+  const idReserva = generateJavaLikeId();
 
-  escutarLink(clientId);
-  console.warn(await requestBack("/reservas/criarReserva", body));
+  const body = { reserva: reserva, clientId, idReserva };
+
+  escutarLink(clientId, navigate);
+  try {
+    await requestBack("/reservas/criarReserva", body);
+  } catch (error) {
+    alert("Não foi possível fazer a reserva! Reveja seus dados!");
+  }
 };
 
 export const cancelarReserva = async () => {
@@ -46,24 +53,24 @@ export const requestBack = async (uri, body) => {
     const response = await fetch(`http://localhost:8080${uri}`, options);
 
     if (!response.ok) {
-      setMensagem("Erro na conexão com o backend");
       throw new Error(`Erro HTTP: ${response.status}`);
     }
 
     const data = await response.json();
     return data;
   } catch (err) {
-    setMensagem("Erro na conexão com o backend");
     console.error(err);
+    throw err;
   }
 };
 
-export const escutarLink = (clientId) => {
+export const escutarLink = (clientId, navigate) => {
   const eventSource = new EventSource(
     `http://localhost:8080/reserva/stream/${clientId}`
   );
 
   eventSource.onmessage = (event) => {
+    navigate(paths.home);
     console.log("🎉 Link recebido:", event.data);
     alert("Link para pagamento: " + event.data);
     eventSource.close();
@@ -71,7 +78,6 @@ export const escutarLink = (clientId) => {
 
   eventSource.onerror = (err) => {
     console.error("Erro SSE:", err);
-    alert("Erro ao escutar link de pagamento.");
     eventSource.close();
   };
 };
@@ -89,3 +95,14 @@ export const escutarPromocao = (clientId, idPromocao) => {
     eventSource.close();
   };
 };
+
+function generateJavaLikeId() {
+  const uuid = v4();
+  const mostSigBitsHex = uuid.replace(/-/g, "").substring(0, 16);
+  let id = BigInt("0x" + mostSigBitsHex);
+
+  const longMax = BigInt("0x7FFFFFFFFFFFFFFF");
+  id = id & longMax;
+
+  return id.toString();
+}

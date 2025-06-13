@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
-import java.util.UUID;
 
 @Component
 public class ItinerarioReceiver {
@@ -26,7 +25,7 @@ public class ItinerarioReceiver {
     @PostConstruct
     public void inicializaAguardaNovaReserva() throws Exception {
         final String exchangeName = "reserva-criada";
-        final String queueName = "fila-pagamento-receiver";
+        final String queueName = "fila-itinerario-receiver";
         final String routingKey = "pagamento";
 
         ConnectionFactory factory = new ConnectionFactory();
@@ -56,8 +55,7 @@ public class ItinerarioReceiver {
 
             if (sucesso) {
                 try {
-                    UUID uuid = UUID.randomUUID();
-                    long idReserva = uuid.getMostSignificantBits() & Long.MAX_VALUE;
+                    long idReserva = reservaComClientId.getIdReserva();
                     String link = gerarLinkPagamento(idReserva);
                     reservaSse.enviarLink(clientId, link);
                 } catch (Exception e) {

@@ -4,6 +4,6 @@ import ReservaCruzeiros.Service.RabbitMQMetodos;
 
 public class BilhetePublisher {
     public void geraBilhete(String nomeCompleto) throws Exception {
-        RabbitMQMetodos.publisherQueue("bilhete-gerado", nomeCompleto);
+        RabbitMQMetodos.publisherQueue("bilhete-gerado", nomeCompleto, null);
     };
 }

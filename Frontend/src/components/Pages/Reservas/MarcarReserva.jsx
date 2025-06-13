@@ -4,32 +4,37 @@ import { Cabecalho } from "../../Dumb/Cabecalho";
 import { Fundo } from "../../Dumb/Fundo";
 import { Input } from "../../Dumb/Input";
 import { CruzeiroCard } from "../../Dumb/CruzeiroCard";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export const MarcarReserva = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { cruzeiro } = location.state;
+
   const [nomeCompleto, setNomeCompleto] = useState("");
   const [dataEmbarque, setDataEmbarque] = useState("");
   const [numeroPassageiros, setNumeroPassageiros] = useState("");
   const [numeroCabines, setNumeroCabines] = useState("");
-  const [idCruzeiro, setIdCruzeiro] = useState("");
 
   const marcarReserva = async () => {
-    await criarReserva({
-      nomeCompleto,
-      dataEmbarque,
-      numeroPassageiros,
-      numeroCabines,
-      idCruzeiro: 1,
-    });
+    await criarReserva(
+      {
+        nomeCompleto,
+        dataEmbarque,
+        numeroPassageiros,
+        numeroCabines,
+        idCruzeiro: cruzeiro.idCruzeiro,
+      },
+      navigate
+    );
   };
-
-  const descricaoTeste = `Cruzeiro Mar Azul saindo de Santos em 01 de Agosto com duração de 7 noites.\nVisitando: Ilhabela, Florianópolis, Punta del Este. \nValor por pessoa: R$4200`;
 
   return (
     <div className="flex min-h-screen">
       <div className="w-1/2 flex flex-col justify-center items-center p-10 relative">
         <Cabecalho titulo="Criar Reserva" />
         <div className="flex flex-col gap-5">
-          <CruzeiroCard descricaoCruzeiro={descricaoTeste} id={1} />
+          <CruzeiroCard cruzeiro={cruzeiro} />
           <Input
             value={nomeCompleto}
             setValue={setNomeCompleto}

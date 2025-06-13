@@ -1,7 +1,6 @@
 package ReservaCruzeiros.Service;
 
 import ReservaCruzeiros.Bilhete.BilheteReceiver;
-import ReservaCruzeiros.Pagamento.PagamentoReceiver;
 import ReservaCruzeiros.Reserva.ReservaReceiver;
 import com.rabbitmq.client.Channel;
 
@@ -16,7 +15,6 @@ public class Service {
     public void paraTodosReceivers() throws Exception {
         ReservaReceiver.pararReservaReceivers();
         BilheteReceiver.pararPagamentoAprovado();
-        PagamentoReceiver.pararNovaReserva();
     }
 
     public static void pararReceiver(Channel canal, String tag) throws IOException {
