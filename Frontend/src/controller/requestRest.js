@@ -19,10 +19,22 @@ export const criarReserva = async (reserva, navigate) => {
   }
 };
 
-export const cancelarReserva = async () => {
-  console.warn(
-    await requestBack("/reservas/cancelarReserva", "cancela reserva")
-  );
+export const consultarReserva = async (idReserva) => {
+  try {
+    return await requestBack("/reservas/consultarReserva", idReserva);
+  } catch (error) {
+    alert(error.message);
+    throw error;
+  }
+};
+
+export const cancelarReserva = async (idReserva) => {
+  try {
+    return await requestBack("/reservas/cancelarReserva", idReserva);
+  } catch (error) {
+    alert(error.message);
+    throw error;
+  }
 };
 
 export const inscreverPromocao = async (promocao) => {
@@ -53,7 +65,8 @@ export const requestBack = async (uri, body) => {
     const response = await fetch(`http://localhost:8080${uri}`, options);
 
     if (!response.ok) {
-      throw new Error(`Erro HTTP: ${response.status}`);
+      const errorText = await response.text();
+      throw new Error(errorText);
     }
 
     const data = await response.json();
