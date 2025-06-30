@@ -2,6 +2,7 @@ package ReservaCruzeiros.Reserva;
 
 import ReservaCruzeiros.Itinerarios.ConsultaDTO;
 import ReservaCruzeiros.NovoMarketing.MarketingService;
+import ReservaCruzeiros.Service.ControleCabinesPromocoes;
 import ReservaCruzeiros.Service.CriarCruzeiro;
 import ReservaCruzeiros.Service.RabbitMQMetodos;
 import ReservaCruzeiros.Service.Service;
@@ -61,8 +62,26 @@ public class ReservaController {
 
 
     @PostMapping("/cancelarReserva")
-    public ResponseEntity<String> cancelarReserva(@RequestBody String reserva) {
-        return ResponseEntity.ok("Reserva cancelada!");
+    public ResponseEntity<Boolean> cancelarReserva(@RequestBody long idReserva) {
+        boolean sucesso = ControleCabinesPromocoes.reservaCanceladaPorId(idReserva);
+        if (sucesso) {
+            return ResponseEntity.ok(true);
+        } else {
+            return ResponseEntity.ok(false);
+        }
+    }
+
+    @PostMapping("/consultarReserva")
+    public ResponseEntity<?> consultarReserva(@RequestBody long idReserva) {
+        ReservaInfo reserva = ControleCabinesPromocoes.getReservaPorId(idReserva);
+
+        if (reserva != null) {
+            return ResponseEntity.ok(reserva);
+        } else {
+            return ResponseEntity
+                    .badRequest()
+                    .body("Reserva com ID " + idReserva + " não encontrada.");
+        }
     }
 
     @PostMapping("/inscreverPromocao")
