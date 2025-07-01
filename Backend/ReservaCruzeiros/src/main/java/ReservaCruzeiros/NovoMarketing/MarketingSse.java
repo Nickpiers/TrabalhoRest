@@ -29,7 +29,7 @@ public class MarketingSse {
         }
 
         String chave = gerarChave(idPromocao, clientId);
-        SseEmitter emitter = new SseEmitter(180000L);
+        SseEmitter emitter = new SseEmitter(null);
         emissores.put(chave, emitter);
 
         emitter.onCompletion(() -> {

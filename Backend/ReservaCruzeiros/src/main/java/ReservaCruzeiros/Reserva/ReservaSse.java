@@ -16,7 +16,7 @@ public class ReservaSse {
 
     @GetMapping(value = "/stream/{clientId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter stream(@PathVariable("clientId") String clientId) {
-        SseEmitter emitter = new SseEmitter(30000L);
+        SseEmitter emitter = new SseEmitter(null);
         emissores.put(clientId, emitter);
 
         emitter.onCompletion(() -> emissores.remove(clientId));
