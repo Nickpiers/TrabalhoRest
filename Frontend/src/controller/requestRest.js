@@ -38,15 +38,31 @@ export const cancelarReserva = async (idReserva) => {
 };
 
 export const inscreverPromocao = async (promocao) => {
-  const clientId = v4();
-  const body = { promocao, clientId };
-
+  const clientId = sessionStorage.getItem("clientId");
   escutarPromocao(clientId, promocao);
   console.warn(await requestBack("/reservas/inscreverPromocao", promocao));
 };
 
-export const cancelarPromocao = async (promocao) => {
-  console.warn(await requestBack("/reservas/cancelarPromocao", promocao));
+export const cancelarPromocao = async (idPromocao) => {
+  const clientId = sessionStorage.getItem("clientId");
+  if (!clientId) {
+    alert("Cliente não identificado na sessão.");
+    return;
+  }
+
+  const body = {
+    idPromocao,
+    clientId,
+  };
+
+  try {
+    const resposta = await requestBack("/reservas/cancelarPromocao", body);
+    console.warn("✅ Promoção cancelada:", resposta);
+    alert("Inscrição na promoção cancelada com sucesso!");
+  } catch (error) {
+    console.error("❌ Erro ao cancelar inscrição:", error.message);
+    alert(`Erro ao cancelar inscrição: ${error.message}`);
+  }
 };
 
 export const requestBack = async (uri, body) => {
