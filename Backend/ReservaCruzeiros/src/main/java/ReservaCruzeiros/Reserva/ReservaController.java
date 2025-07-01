@@ -1,12 +1,14 @@
 package ReservaCruzeiros.Reserva;
 
 import ReservaCruzeiros.Itinerarios.ConsultaDTO;
+import ReservaCruzeiros.NovoMarketing.ControleIdsPromocao;
 import ReservaCruzeiros.NovoMarketing.MarketingService;
 import ReservaCruzeiros.Service.ControleCabinesPromocoes;
 import ReservaCruzeiros.Service.CriarCruzeiro;
 import ReservaCruzeiros.Service.RabbitMQMetodos;
 import ReservaCruzeiros.Service.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -14,6 +16,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/reservas")
@@ -91,8 +94,15 @@ public class ReservaController {
     }
 
     @PostMapping("/cancelarPromocao")
-    public ResponseEntity<String> cancelarPromocao(@RequestBody String promocao) {
-        return ResponseEntity.ok("Promocao cancelada!");
+    public ResponseEntity<String> cancelarPromocao(@RequestBody CancelarInscricaoDto dto) {
+        UUID clienteId = UUID.fromString(dto.getClientId());
+        boolean removido = ControleIdsPromocao.removerCliente(dto.getIdPromocao(), clienteId);
+
+        if (removido) {
+            return ResponseEntity.ok("Inscrição cancelada com sucesso.");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cliente não inscrito nesta promoção.");
+        }
     }
 
     @GetMapping("/testeConexao")
