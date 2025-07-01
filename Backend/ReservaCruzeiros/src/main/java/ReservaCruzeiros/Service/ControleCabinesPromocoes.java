@@ -63,8 +63,6 @@ public class ControleCabinesPromocoes {
         return false;
     }
 
-
-
     public static synchronized void confirmaReserva(int cruzeiro, String nome, int quantidadeSolicitadaCabines, long idReserva) {
         String chave = chaveCruzeiro(cruzeiro);
         reservasPorCruzeiro.putIfAbsent(chave, new ConcurrentHashMap<>());
