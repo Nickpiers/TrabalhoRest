@@ -94,5 +94,17 @@ public class ReservaSse {
     private String gerarChavePromocao(int idPromocao, UUID clientId) {
         return idPromocao + "-" + clientId.toString();
     }
+
+    public void cancelarSSEPromocao(int idPromocao, UUID clientId) {
+        String chave = idPromocao + "-" + clientId.toString();
+        SseEmitter emitter = emissoresPromocao.remove(chave);
+
+        if (emitter != null) {
+            emitter.complete();
+            System.out.printf("🔕 SSE cancelado para cliente %s na promoção %d\n", clientId, idPromocao);
+        } else {
+            System.out.printf("⚠️ Nenhuma conexão SSE encontrada para cliente %s na promoção %d\n", clientId, idPromocao);
+        }
+    }
 }
 

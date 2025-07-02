@@ -39,9 +39,9 @@ export const cancelarReserva = async (idReserva) => {
 
 export const inscreverPromocao = async (promocao) => {
   const clientId = sessionStorage.getItem("clientId");
-  escutarPromocao(clientId, promocao);
   const response = await requestBack("/reservas/inscreverPromocao", promocao);
   alert(response.mensagem);
+  statSSE(clientId, promocao);
 };
 
 export const cancelarPromocao = async (idPromocao) => {
