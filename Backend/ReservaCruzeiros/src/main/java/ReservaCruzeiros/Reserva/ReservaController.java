@@ -25,6 +25,9 @@ public class ReservaController {
     private final MarketingService marketingService;
 
     @Autowired
+    private ReservaSse reservaSse;
+
+    @Autowired
     public ReservaController(MarketingService marketingService) {
         this.marketingService = marketingService;
     }
@@ -96,10 +99,16 @@ public class ReservaController {
     @PostMapping("/cancelarPromocao")
     public ResponseEntity<Map<String, String>> cancelarPromocao(@RequestBody CancelarInscricaoDto dto) {
         UUID clienteId = UUID.fromString(dto.getClientId());
-        boolean removido = ControleIdsPromocao.removerCliente(dto.getIdPromocao(), clienteId);
+        int idPromocao = dto.getIdPromocao();
+
+        boolean removido = ControleIdsPromocao.removerCliente(idPromocao, clienteId);
 
         if (removido) {
-            return ResponseEntity.ok(Map.of("mensagem", "Inscrição na promoção " + dto.getIdPromocao() + ", cancelada com sucesso!"));
+            reservaSse.cancelarSSEPromocao(idPromocao, clienteId);
+
+            return ResponseEntity.ok(Map.of(
+                    "mensagem", "Inscrição na promoção " + idPromocao + ", cancelada com sucesso!"
+            ));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("mensagem", "Cliente não inscrito nesta promoção."));
