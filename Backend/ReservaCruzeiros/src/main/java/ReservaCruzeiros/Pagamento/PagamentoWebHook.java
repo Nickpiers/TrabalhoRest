@@ -1,16 +1,18 @@
 package ReservaCruzeiros.Pagamento;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/pagamento")
 public class PagamentoWebHook{
 
     PagamentoPublisher pagamentoPublisher;
+
+    @PostMapping("/gerarLinkExterno")
+    public ResponseEntity<String> chamarOutroEndpoint(@RequestParam("idReserva") long idReserva) {
+        return ResponseEntity.ok("Link para pagamento: https://ReservaCruzeiros.com/reserva/pagamento/" + idReserva);
+    }
 
     @PostMapping("/notificacao")
     public ResponseEntity<Void> receberNotificacao(@RequestBody NotificacaoPagamentoDTO notificacao) throws Exception {

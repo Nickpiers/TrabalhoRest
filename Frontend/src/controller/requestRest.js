@@ -102,7 +102,7 @@ export const escutarLink = (clientId, navigate) => {
   eventSource.onmessage = (event) => {
     navigate(paths.home);
     console.log("🎉 Link recebido:", event.data);
-    alert("Link para pagamento: " + event.data);
+    alert(event.data);
     eventSource.close();
   };
 

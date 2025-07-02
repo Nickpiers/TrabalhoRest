@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 @Component
 public class ItinerarioReceiver {
@@ -73,6 +74,11 @@ public class ItinerarioReceiver {
 
     private String gerarLinkPagamento(long idReserva) {
         RestTemplate restTemplate = new RestTemplate();
-        return restTemplate.postForObject("http://localhost:8080/pagamento/gerarLink?idReserva=" + idReserva, null, String.class);
+        Map response = restTemplate.postForObject(
+                "http://localhost:8080/pagamento/gerarLink?idReserva=" + idReserva,
+                null,
+                Map.class
+        );
+        return (String) response.get("mensagem");
     }
 }
