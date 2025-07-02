@@ -40,7 +40,8 @@ export const cancelarReserva = async (idReserva) => {
 export const inscreverPromocao = async (promocao) => {
   const clientId = sessionStorage.getItem("clientId");
   escutarPromocao(clientId, promocao);
-  console.warn(await requestBack("/reservas/inscreverPromocao", promocao));
+  const response = await requestBack("/reservas/inscreverPromocao", promocao);
+  alert(response.mensagem);
 };
 
 export const cancelarPromocao = async (idPromocao) => {
@@ -58,7 +59,7 @@ export const cancelarPromocao = async (idPromocao) => {
   try {
     const resposta = await requestBack("/reservas/cancelarPromocao", body);
     console.warn("✅ Promoção cancelada:", resposta);
-    alert("Inscrição na promoção cancelada com sucesso!");
+    alert(resposta.mensagem);
   } catch (error) {
     console.error("❌ Erro ao cancelar inscrição:", error.message);
     alert(`Erro ao cancelar inscrição: ${error.message}`);
@@ -113,7 +114,7 @@ export const escutarLink = (clientId, navigate) => {
 
 export const escutarPromocao = (clientId, idPromocao) => {
   const eventSource = new EventSource(
-    `http://localhost:8080/marketing/stream/${idPromocao}/${clientId}`
+    `http://localhost:8080/reserva/streamPromocao/${idPromocao}/${clientId}`
   );
 
   eventSource.onmessage = (event) => {

@@ -1,5 +1,6 @@
 package ReservaCruzeiros.NovoMarketing;
 
+import ReservaCruzeiros.Reserva.ReservaSse;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
@@ -9,10 +10,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class NovoMarketingReceiver {
 
-    private final MarketingSse marketingSse;
+    private final ReservaSse reservaSse;
 
-    public NovoMarketingReceiver(MarketingSse marketingSse) {
-        this.marketingSse = marketingSse;
+    public NovoMarketingReceiver(ReservaSse reservaSse) {
+        this.reservaSse = reservaSse;
     }
 
     public void inscreveNaPromocao(String promocaoNome, String routingKey) throws Exception {
@@ -33,7 +34,9 @@ public class NovoMarketingReceiver {
             int idPromocao = Integer.parseInt(codPromocao);
 
             System.out.printf("📨 Promoção recebida: %d\n", idPromocao);
-            marketingSse.enviarPromocaoParaTodos(idPromocao, "🎉 promoção recebida");
+            String descricao = PromocaoTipo.values()[idPromocao-1].getDescricao();
+            final String mensagem = "🎉 " + descricao;
+            reservaSse.enviarPromocaoParaTodos(idPromocao, mensagem);
 
             channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
         };

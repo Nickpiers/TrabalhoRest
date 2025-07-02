@@ -88,20 +88,21 @@ public class ReservaController {
     }
 
     @PostMapping("/inscreverPromocao")
-    public ResponseEntity<String> inscreverPromocao(@RequestBody int codPromocao) throws Exception {
+    public ResponseEntity<Map<String, String>> inscreverPromocao(@RequestBody int codPromocao) throws Exception {
         marketingService.inscreveNovoAssinante(codPromocao);
-        return ResponseEntity.ok("Inscrito na promocao!");
+        return ResponseEntity.ok(Map.of("mensagem", "Inscrito na promocao " + codPromocao + ", com sucesso!"));
     }
 
     @PostMapping("/cancelarPromocao")
-    public ResponseEntity<String> cancelarPromocao(@RequestBody CancelarInscricaoDto dto) {
+    public ResponseEntity<Map<String, String>> cancelarPromocao(@RequestBody CancelarInscricaoDto dto) {
         UUID clienteId = UUID.fromString(dto.getClientId());
         boolean removido = ControleIdsPromocao.removerCliente(dto.getIdPromocao(), clienteId);
 
         if (removido) {
-            return ResponseEntity.ok("Inscrição cancelada com sucesso.");
+            return ResponseEntity.ok(Map.of("mensagem", "Inscrição na promoção " + dto.getIdPromocao() + ", cancelada com sucesso!"));
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cliente não inscrito nesta promoção.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("mensagem", "Cliente não inscrito nesta promoção."));
         }
     }
 
