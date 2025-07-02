@@ -1,7 +1,11 @@
 package ReservaCruzeiros.Pagamento;
 
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 @RestController
 @RequestMapping("/pagamento")
@@ -14,17 +18,23 @@ public class PagamentoWebHook{
         return ResponseEntity.ok("Link para pagamento: https://ReservaCruzeiros.com/reserva/pagamento/" + idReserva);
     }
 
-    @PostMapping("/notificacao")
-    public ResponseEntity<Void> receberNotificacao(@RequestBody NotificacaoPagamentoDTO notificacao) throws Exception {
-        System.out.println("📬 Notificação recebida: " + notificacao);
+    public String aprovarPagamento(NotificacaoPagamentoDTO notificacao) throws InterruptedException {
+        Thread.sleep(4000);
+        RestTemplate restTemplate = new RestTemplate();
 
-        if ("aprovada".equalsIgnoreCase(notificacao.getStatus())) {
-//            pagamentoPublisher.processaPagamento(notificacao.getIdReserva(), "aprovado");
-        } else if ("recusada".equalsIgnoreCase(notificacao.getStatus())) {
-//            pagamentoPublisher.processaPagamento(notificacao.getIdReserva(), "recusado");
-        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
-        return ResponseEntity.ok().build();
+        HttpEntity<NotificacaoPagamentoDTO> request = new HttpEntity<>(notificacao, headers);
+
+        ResponseEntity<String> response = restTemplate.postForEntity(
+                "http://localhost:8080/pagamento/notificacao",
+                request,
+                String.class
+        );
+
+        return response.getBody();
     }
+
 }
 
