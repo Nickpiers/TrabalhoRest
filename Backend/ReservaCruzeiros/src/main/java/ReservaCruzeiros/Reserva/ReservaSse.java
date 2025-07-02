@@ -37,6 +37,17 @@ public class ReservaSse {
         }
     }
 
+    public void pagamentoAprovado(String clientId, String nomeCompleto) {
+        SseEmitter emitter = emissores.get(clientId);
+        if (emitter != null) {
+            try {
+                String pagamentoAprovado = "Pagamento de " + nomeCompleto + ", aprovado!";
+                emitter.send(SseEmitter.event().data(pagamentoAprovado));
+            } catch (IOException e) {
+            }
+        }
+    }
+
     @GetMapping(value = "/streamPromocao/{idPromocao}/{clientId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamPromocao(
             @PathVariable("idPromocao") int idPromocao,

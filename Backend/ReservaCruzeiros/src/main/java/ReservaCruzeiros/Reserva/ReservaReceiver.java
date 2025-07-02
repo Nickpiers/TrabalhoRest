@@ -10,28 +10,26 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
+@Component
 public class ReservaReceiver {
-    private static Channel canalPagamentoAprovado;
-    private static String tagPagamentoAprovado;
 
-    private static Channel canalPagamentoRecusado;
-    private static String tagPagamentoRecusado;
+    @Autowired
+    private ReservaSse reservaSse;
 
-    private static Channel canalBilheteGerado;
-    private static String tagBilheteGerado;
-
-    public static void inicializaAguardaPagamento() throws Exception {
+    public void inicializaAguardaPagamento() throws Exception {
         receiverPagamentoAprovado();
         receiverPagamentoRecusado();
         receiverBilheteGerado();
     }
 
-    private static void receiverPagamentoAprovado() throws Exception {
+    private void receiverPagamentoAprovado() throws Exception {
         final String exchangeName = "pagamento-aprovado";
         final String queueName = "fila-reserva";
         final String routingKey = "pagamento";
@@ -58,6 +56,7 @@ public class ReservaReceiver {
                 ControleCabinesPromocoes.confirmaReserva(cruzeiro, nomeCompleto, quantidadeCabines, idReserva);
                 System.out.println("✅ Assinatura verificada. Pagamento de '" + nomeCompleto + "' foi aprovado!");
 
+                reservaSse.pagamentoAprovado(pagamentoDTO.getReservaClientIdDTO().getClientId(), nomeCompleto);
                 channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
             } catch (Exception e) {
                 System.err.println("Erro ao processar mensagem: " + e.getMessage());
@@ -66,9 +65,7 @@ public class ReservaReceiver {
             }
         };
 
-
-        tagPagamentoAprovado = channel.basicConsume(queueName, false, deliverCallback, consumerTag -> {});
-        canalPagamentoAprovado = channel;
+       channel.basicConsume(queueName, false, deliverCallback, consumerTag -> {});
     }
 
     private static void receiverPagamentoRecusado() throws Exception {
@@ -107,8 +104,7 @@ public class ReservaReceiver {
             }
         };
 
-        tagPagamentoRecusado = channel.basicConsume(queueName, false, deliverCallback, consumerTag -> {});
-        canalPagamentoRecusado = channel;
+        channel.basicConsume(queueName, false, deliverCallback, consumerTag -> {});
     }
 
     private static void receiverBilheteGerado() throws Exception {
@@ -128,13 +124,6 @@ public class ReservaReceiver {
             channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
         };
 
-        tagBilheteGerado = channel.basicConsume(queueName, false, deliverCallback, consumerTag -> {});
-        canalBilheteGerado = channel;
-    }
-
-    public static void pararReservaReceivers() throws IOException {
-        Service.pararReceiver(canalPagamentoAprovado, tagPagamentoAprovado);
-        Service.pararReceiver(canalPagamentoRecusado, tagPagamentoRecusado);
-        Service.pararReceiver(canalBilheteGerado, tagBilheteGerado);
+        channel.basicConsume(queueName, false, deliverCallback, consumerTag -> {});
     }
 }
