@@ -3,18 +3,22 @@ package ReservaCruzeiros.Service;
 import ReservaCruzeiros.Bilhete.BilheteReceiver;
 import ReservaCruzeiros.Reserva.ReservaReceiver;
 import com.rabbitmq.client.Channel;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+@Component
 public class Service {
-    public void inicializaReceivers() throws Exception {
-        ReservaReceiver.inicializaAguardaPagamento();
-        BilheteReceiver.inicializaAguardaPagamentoAprovado();
-    }
 
-    public void paraTodosReceivers() throws Exception {
-        ReservaReceiver.pararReservaReceivers();
-        BilheteReceiver.pararPagamentoAprovado();
+    @Autowired
+    private ReservaReceiver reservaReceiver;
+
+    @PostConstruct
+    public void inicializaReceivers() throws Exception {
+        reservaReceiver.inicializaAguardaPagamento();
+        BilheteReceiver.inicializaAguardaPagamentoAprovado();
     }
 
     public static void pararReceiver(Channel canal, String tag) throws IOException {

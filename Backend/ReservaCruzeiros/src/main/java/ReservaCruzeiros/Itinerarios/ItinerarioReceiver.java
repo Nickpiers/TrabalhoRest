@@ -11,10 +11,15 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import org.springframework.http.HttpHeaders;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 @Component
 public class ItinerarioReceiver {
@@ -55,8 +60,7 @@ public class ItinerarioReceiver {
 
             if (sucesso) {
                 try {
-                    long idReserva = reservaComClientId.getIdReserva();
-                    String link = gerarLinkPagamento(idReserva);
+                    String link = gerarLinkPagamento(reservaComClientId);
                     reservaSse.enviarLink(clientId, link);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -71,8 +75,20 @@ public class ItinerarioReceiver {
         channel.basicConsume(queueName, false, deliverCallback, consumerTag -> {});
     }
 
-    private String gerarLinkPagamento(long idReserva) {
+    private String gerarLinkPagamento(ReservaClientIdDTO reservaComClientId) {
         RestTemplate restTemplate = new RestTemplate();
-        return restTemplate.postForObject("http://localhost:8080/pagamento/gerarLink?idReserva=" + idReserva, null, String.class);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<ReservaClientIdDTO> request = new HttpEntity<>(reservaComClientId, headers);
+
+        ResponseEntity<Map> response = restTemplate.postForEntity(
+                "http://localhost:8080/pagamento/gerarLink",
+                request,
+                Map.class
+        );
+
+        return (String) response.getBody().get("mensagem");
     }
 }

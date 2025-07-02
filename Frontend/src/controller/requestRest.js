@@ -19,22 +19,51 @@ export const criarReserva = async (reserva, navigate) => {
   }
 };
 
-export const cancelarReserva = async () => {
-  console.warn(
-    await requestBack("/reservas/cancelarReserva", "cancela reserva")
-  );
+export const consultarReserva = async (idReserva) => {
+  try {
+    return await requestBack("/reservas/consultarReserva", idReserva);
+  } catch (error) {
+    alert(error.message);
+    throw error;
+  }
+};
+
+export const cancelarReserva = async (idReserva) => {
+  try {
+    return await requestBack("/reservas/cancelarReserva", idReserva);
+  } catch (error) {
+    alert(error.message);
+    throw error;
+  }
 };
 
 export const inscreverPromocao = async (promocao) => {
-  const clientId = v4();
-  const body = { promocao, clientId };
-
+  const clientId = sessionStorage.getItem("clientId");
   escutarPromocao(clientId, promocao);
-  console.warn(await requestBack("/reservas/inscreverPromocao", promocao));
+  const response = await requestBack("/reservas/inscreverPromocao", promocao);
+  alert(response.mensagem);
 };
 
-export const cancelarPromocao = async (promocao) => {
-  console.warn(await requestBack("/reservas/cancelarPromocao", promocao));
+export const cancelarPromocao = async (idPromocao) => {
+  const clientId = sessionStorage.getItem("clientId");
+  if (!clientId) {
+    alert("Cliente não identificado na sessão.");
+    return;
+  }
+
+  const body = {
+    idPromocao,
+    clientId,
+  };
+
+  try {
+    const resposta = await requestBack("/reservas/cancelarPromocao", body);
+    console.warn("✅ Promoção cancelada:", resposta);
+    alert(resposta.mensagem);
+  } catch (error) {
+    console.error("❌ Erro ao cancelar inscrição:", error.message);
+    alert(`Erro ao cancelar inscrição: ${error.message}`);
+  }
 };
 
 export const requestBack = async (uri, body) => {
@@ -53,7 +82,8 @@ export const requestBack = async (uri, body) => {
     const response = await fetch(`http://localhost:8080${uri}`, options);
 
     if (!response.ok) {
-      throw new Error(`Erro HTTP: ${response.status}`);
+      const errorText = await response.text();
+      throw new Error(errorText);
     }
 
     const data = await response.json();
@@ -72,7 +102,7 @@ export const escutarLink = (clientId, navigate) => {
   eventSource.onmessage = (event) => {
     navigate(paths.home);
     console.log("🎉 Link recebido:", event.data);
-    alert("Link para pagamento: " + event.data);
+    alert(event.data);
     eventSource.close();
   };
 
@@ -84,7 +114,7 @@ export const escutarLink = (clientId, navigate) => {
 
 export const escutarPromocao = (clientId, idPromocao) => {
   const eventSource = new EventSource(
-    `http://localhost:8080/marketing/stream/${idPromocao}/${clientId}`
+    `http://localhost:8080/reserva/streamPromocao/${idPromocao}/${clientId}`
   );
 
   eventSource.onmessage = (event) => {

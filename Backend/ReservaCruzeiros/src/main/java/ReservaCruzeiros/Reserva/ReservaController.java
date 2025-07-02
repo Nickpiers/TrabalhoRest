@@ -1,11 +1,14 @@
 package ReservaCruzeiros.Reserva;
 
 import ReservaCruzeiros.Itinerarios.ConsultaDTO;
+import ReservaCruzeiros.NovoMarketing.ControleIdsPromocao;
 import ReservaCruzeiros.NovoMarketing.MarketingService;
+import ReservaCruzeiros.Service.ControleCabinesPromocoes;
 import ReservaCruzeiros.Service.CriarCruzeiro;
 import ReservaCruzeiros.Service.RabbitMQMetodos;
 import ReservaCruzeiros.Service.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -13,6 +16,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/reservas")
@@ -61,19 +65,45 @@ public class ReservaController {
 
 
     @PostMapping("/cancelarReserva")
-    public ResponseEntity<String> cancelarReserva(@RequestBody String reserva) {
-        return ResponseEntity.ok("Reserva cancelada!");
+    public ResponseEntity<Boolean> cancelarReserva(@RequestBody long idReserva) {
+        boolean sucesso = ControleCabinesPromocoes.reservaCanceladaPorId(idReserva);
+        if (sucesso) {
+            return ResponseEntity.ok(true);
+        } else {
+            return ResponseEntity.ok(false);
+        }
+    }
+
+    @PostMapping("/consultarReserva")
+    public ResponseEntity<?> consultarReserva(@RequestBody long idReserva) {
+        ReservaInfo reserva = ControleCabinesPromocoes.getReservaPorId(idReserva);
+
+        if (reserva != null) {
+            return ResponseEntity.ok(reserva);
+        } else {
+            return ResponseEntity
+                    .badRequest()
+                    .body("Reserva com ID " + idReserva + " não encontrada.");
+        }
     }
 
     @PostMapping("/inscreverPromocao")
-    public ResponseEntity<String> inscreverPromocao(@RequestBody int codPromocao) throws Exception {
+    public ResponseEntity<Map<String, String>> inscreverPromocao(@RequestBody int codPromocao) throws Exception {
         marketingService.inscreveNovoAssinante(codPromocao);
-        return ResponseEntity.ok("Inscrito na promocao!");
+        return ResponseEntity.ok(Map.of("mensagem", "Inscrito na promocao " + codPromocao + ", com sucesso!"));
     }
 
     @PostMapping("/cancelarPromocao")
-    public ResponseEntity<String> cancelarPromocao(@RequestBody String promocao) {
-        return ResponseEntity.ok("Promocao cancelada!");
+    public ResponseEntity<Map<String, String>> cancelarPromocao(@RequestBody CancelarInscricaoDto dto) {
+        UUID clienteId = UUID.fromString(dto.getClientId());
+        boolean removido = ControleIdsPromocao.removerCliente(dto.getIdPromocao(), clienteId);
+
+        if (removido) {
+            return ResponseEntity.ok(Map.of("mensagem", "Inscrição na promoção " + dto.getIdPromocao() + ", cancelada com sucesso!"));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("mensagem", "Cliente não inscrito nesta promoção."));
+        }
     }
 
     @GetMapping("/testeConexao")

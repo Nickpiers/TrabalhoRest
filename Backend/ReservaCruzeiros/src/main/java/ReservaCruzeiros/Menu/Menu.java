@@ -81,7 +81,6 @@ public class Menu {
 //        ReservaDto reserva = new ReservaDto(nomeCompleto, dataEmbarque, numeroPassageiros, numeroCabines);
 //        ReservaPublisher.novaReserva(reserva);
         Thread.sleep(5000);
-        service.paraTodosReceivers();
     }
 
     private void chamaPromocao(Scanner scanner) throws Exception {

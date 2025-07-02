@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from "uuid";
+
 import { useEffect } from "react";
 import { requestBack } from "../../controller/requestRest";
 import { paths } from "../../controller/paths";
@@ -11,6 +13,11 @@ export const Home = () => {
     const testeConexaoBack = async () => {
       await requestBack("/reservas/testeConexao");
     };
+    const existingId = sessionStorage.getItem("clientId");
+    if (!existingId) {
+      const newId = uuidv4();
+      sessionStorage.setItem("clientId", newId);
+    }
     testeConexaoBack();
   }, []);
 

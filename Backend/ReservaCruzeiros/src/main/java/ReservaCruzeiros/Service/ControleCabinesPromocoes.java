@@ -9,6 +9,7 @@ public class ControleCabinesPromocoes {
 
     private static final int QUANTIDADE_MAXIMA_CABINES = 10;
     private static final Map<String, Map<String, ReservaInfo>> reservasPorCruzeiro = new ConcurrentHashMap<>();
+    private static final Map<Long, ReservaInfo> reservasPorId = new ConcurrentHashMap<>();
 
     private static String chaveCruzeiro(int cruzeiro) {
         return "cruzeiro_" + cruzeiro;
@@ -31,32 +32,35 @@ public class ControleCabinesPromocoes {
         return disponiveis >= quantidadeSolicitadaCabines;
     }
 
-    public static synchronized boolean reservaCancelada(int cruzeiro, String nome , int quantidadeCanceladaCabines) {
-        String chave = chaveCruzeiro(cruzeiro);
-        Map<String, ReservaInfo> reservasCruzeiro = reservasPorCruzeiro.get(chave);
+    public static synchronized boolean reservaCanceladaPorId(long idReserva) {
+        ReservaInfo reserva = reservasPorId.get(idReserva);
 
-        if (reservasCruzeiro == null || !reservasCruzeiro.containsKey(nome)) {
-            System.out.printf("❌ Nenhuma reserva encontrada para %s no cruzeiro %d\n", nome, cruzeiro);
+        if (reserva == null) {
+            System.out.printf("❌ Nenhuma reserva encontrada com id %d\n", idReserva);
             return false;
         }
 
-        if (quantidadeCanceladaCabines <= 0) {
-            System.out.println("❌ Quantidade inválida.");
-            return false;
+        for (Map.Entry<String, Map<String, ReservaInfo>> entryCruzeiro : reservasPorCruzeiro.entrySet()) {
+            Map<String, ReservaInfo> reservasCruzeiro = entryCruzeiro.getValue();
+
+            for (Map.Entry<String, ReservaInfo> entryReserva : reservasCruzeiro.entrySet()) {
+                if (entryReserva.getValue().getIdReserva() == idReserva) {
+                    String nome = entryReserva.getKey();
+                    String chaveCruzeiro = entryCruzeiro.getKey();
+
+                    reservasCruzeiro.remove(nome);
+                    reservasPorId.remove(idReserva);
+
+                    int cruzeiroNum = Integer.parseInt(chaveCruzeiro.replace("cruzeiro_", ""));
+                    System.out.printf("✅ Reserva de %s no cruzeiro %d cancelada completamente. Cabines disponíveis: %d\n",
+                            nome, cruzeiroNum, getCabinesDisponiveis(cruzeiroNum));
+                    return true;
+                }
+            }
         }
 
-        ReservaInfo reserva = reservasCruzeiro.get(nome);
-        int novaQuantidade = reserva.getQuantidadeCabines() - quantidadeCanceladaCabines;
-
-        if (novaQuantidade > 0) {
-            reserva.setQuantidadeCabines(novaQuantidade);
-        } else {
-            reservasCruzeiro.remove(nome);
-        }
-
-        System.out.printf("✅ Reserva cancelada para %s no cruzeiro %d. Cabines disponíveis: %d\n",
-                nome, cruzeiro, getCabinesDisponiveis(cruzeiro));
-        return true;
+        System.out.println("❌ Inconsistência: reserva encontrada no índice mas não na estrutura principal.");
+        return false;
     }
 
     public static synchronized void confirmaReserva(int cruzeiro, String nome, int quantidadeSolicitadaCabines, long idReserva) {
@@ -64,15 +68,20 @@ public class ControleCabinesPromocoes {
         reservasPorCruzeiro.putIfAbsent(chave, new ConcurrentHashMap<>());
         Map<String, ReservaInfo> reservasCruzeiro = reservasPorCruzeiro.get(chave);
 
-        reservasCruzeiro.merge(nome,
-                new ReservaInfo(idReserva, quantidadeSolicitadaCabines),
-                (existente, nova) -> {
-                    existente.incrementarCabines(nova.getQuantidadeCabines());
-                    return existente;
-                });
+        ReservaInfo novaReserva = new ReservaInfo(idReserva, quantidadeSolicitadaCabines);
+        reservasCruzeiro.merge(nome, novaReserva, (existente, nova) -> {
+            existente.incrementarCabines(nova.getQuantidadeCabines());
+            return existente;
+        });
+
+        reservasPorId.put(idReserva, reservasCruzeiro.get(nome));
 
         System.out.printf("✅ Reserva criada para %s no cruzeiro %d. Cabines restantes: %d\n",
                 nome, cruzeiro, getCabinesDisponiveis(cruzeiro));
+    }
+
+    public static ReservaInfo getReservaPorId(long idReserva) {
+        return reservasPorId.get(idReserva);
     }
 
     public static int getCabinesDisponiveis(int cruzeiro) {

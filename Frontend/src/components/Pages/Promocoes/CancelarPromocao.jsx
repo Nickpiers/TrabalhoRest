@@ -7,7 +7,7 @@ export const CancelarPromocao = () => {
   return (
     <div className="flex min-h-screen">
       <div className="w-1/2 flex flex-col justify-center items-center p-10 relative">
-        <Cabecalho titulo="Inscrever Promocao" />
+        <Cabecalho titulo="Cancelar Promocao" />
         <PromocaoCards acaoBotao={cancelarPromocao} />
       </div>
       <Fundo />
